@@ -1,0 +1,18 @@
+#!/bin/sh
+# Install the driver bundled in the app, reload Core Audio (no Mac restart needed),
+# then open Unduck for the logged-in user.
+APP="$3/Applications/Unduck.app"
+DRIVER="$3/Library/Audio/Plug-Ins/HAL/Unduck.driver"
+
+/bin/rm -rf "$DRIVER"
+/bin/mkdir -p "$3/Library/Audio/Plug-Ins/HAL"
+/usr/bin/ditto "$APP/Contents/Resources/Unduck.driver" "$DRIVER"
+/usr/sbin/chown -R root:wheel "$DRIVER"
+/usr/bin/killall coreaudiod || true
+
+CONSOLE_USER=$(/usr/bin/stat -f %Su /dev/console)
+if [ -n "$CONSOLE_USER" ] && [ "$CONSOLE_USER" != "root" ]; then
+  /bin/sleep 2
+  /bin/launchctl asuser "$(/usr/bin/id -u "$CONSOLE_USER")" /usr/bin/sudo -u "$CONSOLE_USER" /usr/bin/open "$APP" || true
+fi
+exit 0

@@ -1,0 +1,122 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Unduck: Stop FaceTime from Lowering Your Music on Mac (Free)</title>
+<meta name="description" content="Unduck is a free, open-source Mac menu bar app that turns off FaceTime audio ducking, so music, videos and games keep their volume during calls. Works with AirPods.">
+<meta name="keywords" content="FaceTime audio ducking, FaceTime lowers volume Mac, music quiet during FaceTime call, disable audio ducking macOS, AirPods FaceTime volume">
+<link rel="canonical" href="https://iv2fi.github.io/unduck/">
+<link rel="icon" href="icon.png">
+<meta property="og:title" content="Unduck: stop FaceTime from lowering your music on Mac">
+<meta property="og:description" content="Free, open-source menu bar app that turns off FaceTime audio ducking on macOS.">
+<meta property="og:image" content="https://iv2fi.github.io/unduck/icon.png">
+<meta property="og:type" content="website">
+<meta name="twitter:card" content="summary">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "SoftwareApplication",
+  "name": "Unduck",
+  "operatingSystem": "macOS 14.2 or later",
+  "applicationCategory": "UtilitiesApplication",
+  "description": "Free, open-source menu bar app that stops FaceTime from lowering the volume of other apps (audio ducking) on Mac.",
+  "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
+  "downloadUrl": "https://github.com/iv2fi/unduck/releases/latest",
+  "license": "https://www.gnu.org/licenses/gpl-3.0.html",
+  "author": { "@type": "Person", "name": "V2F", "url": "https://www.youtube.com/@V2F" }
+}
+</script>
+<style>
+  :root {
+    --bg: #fbfaf7; --fg: #1d1d1f; --muted: #5f6368; --card: #ffffff; --line: #e6e3dc;
+    --accent: #1a56b8; --accent-fg: #ffffff; --duck: #ffd23f;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root { --bg: #121314; --fg: #f2f2f2; --muted: #a3a7ad; --card: #1c1d1f; --line: #2c2e31;
+            --accent: #5b9bff; --accent-fg: #0b1220; }
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--fg);
+         font: 17px/1.6 -apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", sans-serif; }
+  main { max-width: 760px; margin: 0 auto; padding: 56px 16px 80px; }
+  header { text-align: center; }
+  header img { width: 112px; height: 112px; }
+  h1 { font-size: clamp(30px, 6vw, 44px); line-height: 1.15; margin: 16px 0 12px; letter-spacing: -0.02em; }
+  .lede { font-size: 19px; color: var(--muted); margin: 0 auto 28px; max-width: 560px; }
+  .button { display: inline-block; background: var(--accent); color: var(--accent-fg); text-decoration: none;
+            font-weight: 600; padding: 13px 26px; border-radius: 12px; }
+  .meta { color: var(--muted); font-size: 14px; margin-top: 10px; }
+  .meta a { color: inherit; }
+  h2 { font-size: 24px; margin: 56px 0 12px; letter-spacing: -0.01em; }
+  h3 { font-size: 17px; margin: 24px 0 4px; }
+  p, li { color: var(--fg); }
+  blockquote { margin: 0 0 8px; padding: 10px 16px; background: var(--card); border: 1px solid var(--line);
+               border-radius: 12px; color: var(--muted); font-style: italic; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; }
+  .card { background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 16px; }
+  .card b { display: block; margin-bottom: 4px; }
+  .card span { color: var(--muted); font-size: 15px; }
+  pre { background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 14px 16px;
+        overflow-x: auto; font: 14px/1.5 ui-monospace, "SF Mono", Menlo, monospace; }
+  code { font: 0.9em ui-monospace, "SF Mono", Menlo, monospace; }
+  ol li, ul li { margin-bottom: 6px; }
+  footer { margin-top: 64px; color: var(--muted); font-size: 14px; text-align: center; }
+  footer a { color: inherit; }
+</style>
+</head>
+<body>
+<main>
+  <header>
+    <img src="icon.png" alt="Unduck icon: a yellow duck with a slash">
+    <h1>Stop FaceTime from lowering your music on Mac</h1>
+    <p class="lede">Unduck is a free, open-source menu bar app that turns off FaceTime audio ducking, so music, videos and games keep their volume during calls.</p>
+    <a class="button" href="https://github.com/iv2fi/unduck/releases/latest">Download for macOS</a>
+    <div class="meta">Free · Open source · Notarized by Apple · macOS 14.2+ · Apple Silicon &amp; Intel · <a href="https://github.com/iv2fi/unduck">Source on GitHub</a></div>
+  </header>
+
+  <h2>Sound familiar?</h2>
+  <blockquote>Every time I start a FaceTime call, my music gets super quiet.</blockquote>
+  <blockquote>YouTube is almost silent while I'm on FaceTime, and there's no setting to stop it.</blockquote>
+  <p>That's <b>audio ducking</b>: during a FaceTime call, macOS automatically lowers the volume of every other app. Apple gives you no way to turn it off. Unduck does.</p>
+
+  <h2>What you get</h2>
+  <div class="grid">
+    <div class="card"><b>🦆 No more ducking</b><span>Other apps keep their volume during FaceTime calls.</span></div>
+    <div class="card"><b>🎚 Your own ducking level</b><span>Off by default, or lower other apps by 6 to 30 dB during calls.</span></div>
+    <div class="card"><b>🔊 FaceTime volume boost</b><span>Up to 300%, with a soft limiter so voices stay clean.</span></div>
+    <div class="card"><b>🎧 Works with AirPods</b><span>And any headphones, speakers or audio interface.</span></div>
+    <div class="card"><b>🪶 Stays out of the way</b><span>Menu bar only, no Dock icon, starts at login.</span></div>
+    <div class="card"><b>🔓 Free &amp; open source</b><span>GPL-3.0. No account, no tracking.</span></div>
+  </div>
+
+  <h2>How it works</h2>
+  <p>macOS ducks other apps on the audio device FaceTime plays to. Unduck adds a small virtual audio device, also called <i>Unduck</i>. FaceTime plays into it, and Unduck forwards the call to your real headphones, so macOS has nothing to duck.</p>
+  <pre>Before:  FaceTime ──► AirPods ◄── Music   (Music gets lowered)
+After:   FaceTime ──► Unduck ──► AirPods ◄── Music   (nothing is lowered)</pre>
+
+  <h2>Install in a minute</h2>
+  <ol>
+    <li>Download <code>Unduck-x.y.z.pkg</code> from the <a href="https://github.com/iv2fi/unduck/releases/latest">latest release</a> and open it. It's signed and notarized by Apple.</li>
+    <li>Unduck installs its audio driver (no restart needed) and opens.</li>
+    <li>In FaceTime, choose <b>Video › Audio Output › Unduck</b>. Done.</li>
+  </ol>
+
+  <h2>FAQ</h2>
+  <h3>Audio sounds muffled or like a phone call?</h3>
+  <p>You're probably using your headphones' microphone over Bluetooth. When an app uses the mic of Bluetooth headphones (AirPods included), they switch to a low-quality "headset" codec for <b>all</b> audio. It's a Bluetooth limitation. Fix: in FaceTime, choose <b>Video › Microphone</b> and pick your Mac's or iPhone's microphone instead.</p>
+  <h3>Why does Unduck ask for microphone access?</h3>
+  <p>Unduck reads the virtual audio channel FaceTime plays into, and macOS counts reading any audio channel as "using the microphone". Unduck never listens to your real microphone; the orange indicator only shows during calls.</p>
+  <h3>Does it work with Zoom, Discord, Teams or WhatsApp?</h3>
+  <p>Yes, if the app lets you choose a speaker: pick <b>Unduck</b> in its audio settings.</p>
+  <h3>Does it add latency?</h3>
+  <p>About 20 ms, unnoticeable next to Bluetooth's own latency.</p>
+
+  <footer>
+    <p>Unduck is not affiliated with Apple. FaceTime is a trademark of Apple Inc.<br>
+    Virtual audio driver based on <a href="https://github.com/ExistentialAudio/BlackHole">BlackHole</a> by Existential Audio (GPL-3.0).</p>
+    <p>Made by <a href="https://www.youtube.com/@V2F">V2F</a> · <a href="https://github.com/iv2fi/unduck">GitHub</a> · <a href="https://github.com/iv2fi/unduck/issues">Report a problem</a></p>
+  </footer>
+</main>
+</body>
+</html>

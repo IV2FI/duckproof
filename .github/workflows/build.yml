@@ -1,0 +1,16 @@
+name: Build
+
+# Checks that every push builds. Official, signed releases are made locally with scripts/release.sh.
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  build:
+    runs-on: macos-15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+      - run: ./scripts/build.sh
