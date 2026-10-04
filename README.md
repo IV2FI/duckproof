@@ -11,6 +11,8 @@ Free, open-source menu bar app that disables FaceTime audio ducking on macOS.</p
   <a href="#faq">FAQ</a>
 </p>
 
+<p align="center"><a href="https://iv2fi.github.io/unduck/#demo"><img src="docs/media/unduck-launch-readme.jpg" width="760" alt="Unduck demo video: a FaceTime call starts, the music gets ducked, and Unduck brings it back"></a></p>
+
 ---
 
 ## Sound familiar?

@@ -10,9 +10,11 @@
 <link rel="icon" href="icon.png">
 <meta property="og:title" content="Unduck: stop FaceTime from lowering your music on Mac">
 <meta property="og:description" content="Free, open-source menu bar app that turns off FaceTime audio ducking on macOS.">
-<meta property="og:image" content="https://iv2fi.github.io/unduck/icon.png">
+<meta property="og:image" content="https://iv2fi.github.io/unduck/media/unduck-launch-poster.jpg">
+<meta property="og:video" content="https://iv2fi.github.io/unduck/media/unduck-launch.mp4">
+<meta property="og:video:type" content="video/mp4">
 <meta property="og:type" content="website">
-<meta name="twitter:card" content="summary">
+<meta name="twitter:card" content="summary_large_image">
 <script type="application/ld+json">
 {
   "@context": "https://schema.org",
@@ -61,6 +63,9 @@
         overflow-x: auto; font: 14px/1.5 ui-monospace, "SF Mono", Menlo, monospace; }
   code { font: 0.9em ui-monospace, "SF Mono", Menlo, monospace; }
   ol li, ul li { margin-bottom: 6px; }
+  .demo { margin: 48px 0 0; }
+  .demo video { display: block; width: 100%; aspect-ratio: 16 / 9; border-radius: 16px; border: 1px solid var(--line); background: #000; }
+  .demo p { text-align: center; color: var(--muted); font-size: 15px; margin: 10px 0 0; }
   footer { margin-top: 64px; color: var(--muted); font-size: 14px; text-align: center; }
   footer a { color: inherit; }
 </style>
@@ -74,6 +79,13 @@
     <a class="button" href="https://github.com/iv2fi/unduck/releases/latest">Download for macOS</a>
     <div class="meta">Free · Open source · Notarized by Apple · macOS 14.2+ · Apple Silicon &amp; Intel · <a href="https://github.com/iv2fi/unduck">Source on GitHub</a></div>
   </header>
+
+  <section class="demo" id="demo">
+    <video controls playsinline preload="metadata" poster="media/unduck-launch-poster.jpg">
+      <source src="media/unduck-launch.mp4" type="video/mp4">
+    </video>
+    <p>🔊 Turn the sound on: hear the music get ducked when the call starts, then come back with Unduck.</p>
+  </section>
 
   <h2>Sound familiar?</h2>
   <blockquote>Every time I start a FaceTime call, my music gets super quiet.</blockquote>
