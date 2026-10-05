@@ -36,14 +36,6 @@ That's **audio ducking**: during a FaceTime call, macOS automatically lowers the
 - 🇫🇷 **English and French.**
 - 🔓 **Free and open source** (GPL-3.0). No account, no tracking, no network access except an optional daily update check.
 
-## Why Duckproof works this way
-
-There are two ways to beat ducking. One is to capture every app's audio and re-play it at full volume, which means your music, videos and games all pass through a third-party app: possible delay, clipping, and spatial audio folded down to stereo. Duckproof does the opposite:
-
-- **Only the call takes a detour.** Your music, videos and games play straight to your headphones, untouched: same quality, no added latency, Spatial Audio and Dolby Atmos still work.
-- **Nothing to fight.** macOS still "ducks", but only on Duckproof's virtual output, where the only thing playing is the call. No undocumented tricks that a macOS update could break.
-- **Lightweight.** Duckproof only processes audio while a call is on.
-
 ## How it works
 
 macOS ducks other apps **on the audio device FaceTime is playing to**. Duckproof installs a small virtual audio device called *Duckproof*:
@@ -56,6 +48,14 @@ After:   FaceTime ──► Duckproof ──► AirPods ◄── Music   (nothi
 1. You set FaceTime's audio output to *Duckproof*, once.
 2. Duckproof forwards the call audio to your real output (AirPods, speakers…) with about 20 ms of added latency.
 3. Your other apps play straight to your headphones, so macOS has nothing to duck.
+
+## Why Duckproof works this way
+
+There are two ways to beat ducking. One is to capture every app's audio and re-play it at full volume, which means your music, videos and games all pass through a third-party app: possible delay, clipping, and spatial audio folded down to stereo. Duckproof does the opposite:
+
+- **Only the call takes a detour.** Your music, videos and games play straight to your headphones, untouched: same quality, no added latency, Spatial Audio and Dolby Atmos still work.
+- **Nothing to fight.** macOS still "ducks", but only on Duckproof's virtual output, where the only thing playing is the call. No undocumented tricks that a macOS update could break.
+- **Lightweight.** Duckproof only processes audio while a call is on.
 
 ## Install
 
