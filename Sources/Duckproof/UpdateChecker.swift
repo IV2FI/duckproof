@@ -8,7 +8,7 @@ final class UpdateChecker: ObservableObject {
     }
 
     /// "owner/repo", written into Info.plist by scripts/build.sh. Nil in builds without a GitHub remote.
-    static let repository = Bundle.main.object(forInfoDictionaryKey: "UnduckRepository") as? String
+    static let repository = Bundle.main.object(forInfoDictionaryKey: "DuckproofRepository") as? String
     static var currentVersion: String { Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "0" }
     static var releasesPage: URL? { repository.flatMap { URL(string: "https://github.com/\($0)/releases/latest") } }
 
@@ -64,8 +64,8 @@ final class UpdateChecker: ObservableObject {
         // One notification per new version, not one per day.
         guard let release, defaults.string(forKey: "notifiedVersion") != release.version else { return }
         defaults.set(release.version, forKey: "notifiedVersion")
-        Notifier.shared.post("Unduck \(release.version) is available", "Click to download it from GitHub.",
-                             id: "unduck.update", url: release.url)
+        Notifier.shared.post("Duckproof \(release.version) is available", "Click to download it from GitHub.",
+                             id: "duckproof.update", url: release.url)
     }
 
     static func isNewer(_ candidate: String, than current: String) -> Bool {

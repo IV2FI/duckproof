@@ -2,21 +2,21 @@
 import PackageDescription
 
 let package = Package(
-    name: "Unduck",
+    name: "Duckproof",
     platforms: [.macOS(.v14)],
     targets: [
         .target(
-            name: "UnduckAudio",
-            path: "Sources/UnduckAudio",
+            name: "DuckproofAudio",
+            path: "Sources/DuckproofAudio",
             linkerSettings: [
                 .linkedFramework("CoreAudio"),
                 .linkedFramework("AudioToolbox"),
             ]
         ),
         .executableTarget(
-            name: "Unduck",
-            dependencies: ["UnduckAudio"],
-            path: "Sources/Unduck"
+            name: "Duckproof",
+            dependencies: ["DuckproofAudio"],
+            path: "Sources/Duckproof"
         ),
     ]
 )

@@ -1,9 +1,9 @@
 import AppKit
 import AVFoundation
 import ServiceManagement
-import UnduckAudio
+import DuckproofAudio
 
-/// Orchestration: while FaceTime plays into the Unduck driver, copy that audio to the chosen
+/// Orchestration: while FaceTime plays into the Duckproof driver, copy that audio to the chosen
 /// output device. FaceTime no longer plays on the headphones, so macOS no longer ducks other apps there.
 final class Controller: ObservableObject {
     enum Phase: Equatable {
@@ -38,7 +38,7 @@ final class Controller: ObservableObject {
             do {
                 if launchAtLogin { try SMAppService.mainApp.register() } else { try SMAppService.mainApp.unregister() }
             } catch {
-                NSLog("Unduck: launch at login: \(error)")
+                NSLog("Duckproof: launch at login: \(error)")
             }
         }
     }
@@ -51,13 +51,13 @@ final class Controller: ObservableObject {
     private var callStarted = false
     private var warnedThisCall = Set<String>()
     private var listeners: [AudioSystem.Listener] = []
-    private var unduckListeners: [AudioSystem.Listener] = []
-    private var unduckID: AudioObjectID = 0
+    private var duckproofListeners: [AudioSystem.Listener] = []
+    private var duckproofID: AudioObjectID = 0
     private var pollTimer: Timer?
 
     /// Our own ducking while a call is on: the output volume is lowered by `db` (negative)
     /// and FaceTime is boosted by the same amount, so only the other apps get quieter.
-    /// Persisted so the volume can be put back even if Unduck quits mid-call.
+    /// Persisted so the volume can be put back even if Duckproof quits mid-call.
     private var appliedDuck: (device: AudioObjectID, uid: String, db: Float32)? {
         didSet {
             defaults.set(appliedDuck?.uid, forKey: "pendingDuckUID")
@@ -76,7 +76,7 @@ final class Controller: ObservableObject {
         launchAtLogin = SMAppService.mainApp.status == .enabled
         updateGain()
 
-        // Unduck quit during a call last time: give the volume back.
+        // Duckproof quit during a call last time: give the volume back.
         if let uid = defaults.string(forKey: "pendingDuckUID"), let device = AudioSystem.device(uid: uid) {
             AudioSystem.adjustVolume(device.id, byDB: -Float32(defaults.double(forKey: "pendingDuckDB")))
         }
@@ -111,12 +111,12 @@ final class Controller: ObservableObject {
     func evaluate() {
         refreshDevices()
 
-        guard let unduck = AudioSystem.device(uid: unduckDeviceUID) else {
+        guard let duckproof = AudioSystem.device(uid: duckproofDeviceUID) else {
             stopRouting()
             phase = .driverMissing
             return
         }
-        watchUnduck(unduck.id)
+        watchDuckproof(duckproof.id)
 
         guard enabled else {
             stopRouting()
@@ -131,11 +131,11 @@ final class Controller: ObservableObject {
 
         let me = getpid()
         let processes = AudioSystem.processes().filter { $0.pid != me }
-        let feeders = processes.filter { $0.isRunningOutput && $0.outputDevices.contains(unduck.id) }
-        let feedingUnduck = !feeders.isEmpty
+        let feeders = processes.filter { $0.isRunningOutput && $0.outputDevices.contains(duckproof.id) }
+        let feedingDuckproof = !feeders.isEmpty
         let forced = forcedUntil.map { $0 > Date() } ?? false
 
-        guard faceTimeRunning || feedingUnduck || forced else {
+        guard faceTimeRunning || feedingDuckproof || forced else {
             stopRouting()
             stopPolling()
             endCall()
@@ -144,10 +144,10 @@ final class Controller: ObservableObject {
         }
 
         if faceTimeRunning { startPolling() }
-        // Only read Unduck while something actually plays into it: reading an input device
+        // Only read Duckproof while something actually plays into it: reading an input device
         // turns on the orange mic indicator, which should not stay lit while FaceTime idles.
-        if feedingUnduck || forced {
-            if let failure = startRouting(from: unduck) {
+        if feedingDuckproof || forced {
+            if let failure = startRouting(from: duckproof) {
                 phase = .failed(failure)
                 return
             }
@@ -156,9 +156,9 @@ final class Controller: ObservableObject {
         }
 
         let callProcesses = processes.filter { Self.callBundleIDs.contains($0.bundleID) }
-        let inCall = feedingUnduck || callProcesses.contains { $0.isRunningInput }
+        let inCall = feedingDuckproof || callProcesses.contains { $0.isRunningInput }
         if inCall {
-            if feedingUnduck { applyDucking() }
+            if feedingDuckproof { applyDucking() }
             beginCall(feeder: feeders.first, callProcesses: callProcesses)
             phase = .inCall
         } else {
@@ -167,12 +167,12 @@ final class Controller: ObservableObject {
         }
     }
 
-    /// Plays a sound into Unduck to check the forwarding without making a call.
+    /// Plays a sound into Duckproof to check the forwarding without making a call.
     func playTestSound() {
         forcedUntil = Date().addingTimeInterval(3)
         evaluate()
         let sound = NSSound(named: "Glass")
-        sound?.playbackDeviceIdentifier = unduckDeviceUID
+        sound?.playbackDeviceIdentifier = duckproofDeviceUID
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.4) { sound?.play() }
         DispatchQueue.main.asyncAfter(deadline: .now() + 3.2) { [weak self] in self?.evaluate() }
     }
@@ -183,20 +183,20 @@ final class Controller: ObservableObject {
         let usable = outputs
         if !outputUID.isEmpty, let chosen = usable.first(where: { $0.uid == outputUID }) { return chosen }
         if let system = AudioSystem.defaultDevice(input: false), system.isUserFacing { return system }
-        return usable.first { $0.isBuiltIn } ?? usable.first   // never Unduck into itself
+        return usable.first { $0.isBuiltIn } ?? usable.first   // never Duckproof into itself
     }
 
-    private func startRouting(from unduck: AudioDevice) -> String? {
+    private func startRouting(from duckproof: AudioDevice) -> String? {
         guard let output = targetOutput() else { return "No audio output available" }
-        let rate = AudioSystem.get(unduck.id, kAudioDevicePropertyNominalSampleRate, default: Float64(48000))
-        if let route, route.input == unduck.id, route.output == output.id, route.rate == rate { return nil }
+        let rate = AudioSystem.get(duckproof.id, kAudioDevicePropertyNominalSampleRate, default: Float64(48000))
+        if let route, route.input == duckproof.id, route.output == output.id, route.rate == rate { return nil }
 
-        let status = ud_passthrough_start(passthrough, unduck.id, output.id)
+        let status = ud_passthrough_start(passthrough, duckproof.id, output.id)
         guard status == noErr else {
             route = nil
             return "Can't open \(output.name) (error \(status))"
         }
-        route = (unduck.id, output.id, rate)
+        route = (duckproof.id, output.id, rate)
         updateGain()
         routeDescription = "Call audio → \(output.name)"
         startPolling()
@@ -241,14 +241,14 @@ final class Controller: ObservableObject {
 
     // MARK: Ongoing call
 
-    /// FaceTime calls run in avconferenced; any other app playing into Unduck is named after itself.
+    /// FaceTime calls run in avconferenced; any other app playing into Duckproof is named after itself.
     private func appName(_ process: AudioProcess) -> String {
         if Self.callBundleIDs.contains(process.bundleID) { return "FaceTime" }
         return NSRunningApplication(processIdentifier: process.pid)?.localizedName ?? process.bundleID
     }
 
     private func beginCall(feeder: AudioProcess?, callProcesses: [AudioProcess]) {
-        let feedingUnduck = feeder != nil
+        let feedingDuckproof = feeder != nil
         if !callStarted {
             callStarted = true
             if let feeder {
@@ -257,11 +257,11 @@ final class Controller: ObservableObject {
             }
         }
 
-        // FaceTime isn't playing into Unduck: it will duck other apps.
+        // FaceTime isn't playing into Duckproof: it will duck other apps.
         let faceTimeOutputs = callProcesses.filter(\.isRunningOutput)
-        if !feedingUnduck, !faceTimeOutputs.isEmpty {
-            notify("FaceTime isn't using Unduck",
-                   "In FaceTime: Video menu › Audio Output › Unduck. Otherwise other apps will get quieter.",
+        if !feedingDuckproof, !faceTimeOutputs.isEmpty {
+            notify("FaceTime isn't using Duckproof",
+                   "In FaceTime: Video menu › Audio Output › Duckproof. Otherwise other apps will get quieter.",
                    key: "output")
         }
     }
@@ -274,7 +274,7 @@ final class Controller: ObservableObject {
 
     private func notify(_ title: String, _ body: String, key: String) {
         guard notificationsEnabled, warnedThisCall.insert(key).inserted else { return }
-        Notifier.shared.post(title, body, id: "unduck.\(key)")
+        Notifier.shared.post(title, body, id: "duckproof.\(key)")
     }
 
     // MARK: Monitoring
@@ -284,11 +284,11 @@ final class Controller: ObservableObject {
         systemOutputName = AudioSystem.defaultDevice(input: false)?.name ?? ""
     }
 
-    /// React immediately when something starts playing into Unduck, or its sample rate changes.
-    private func watchUnduck(_ id: AudioObjectID) {
-        guard id != unduckID else { return }
-        unduckID = id
-        unduckListeners = [
+    /// React immediately when something starts playing into Duckproof, or its sample rate changes.
+    private func watchDuckproof(_ id: AudioObjectID) {
+        guard id != duckproofID else { return }
+        duckproofID = id
+        duckproofListeners = [
             AudioSystem.listen(kAudioDevicePropertyDeviceIsRunningSomewhere, on: id) { [weak self] in self?.evaluate() },
             AudioSystem.listen(kAudioDevicePropertyNominalSampleRate, on: id) { [weak self] in self?.evaluate() },
         ]

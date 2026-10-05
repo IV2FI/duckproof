@@ -3,8 +3,8 @@ import AppKit
 /// Installs / updates / removes the virtual audio driver bundled inside the app.
 /// No Mac restart needed: relaunching coreaudiod is enough to load the driver.
 enum DriverManager {
-    static let installedURL = URL(fileURLWithPath: "/Library/Audio/Plug-Ins/HAL/Unduck.driver")
-    static var bundledURL: URL? { Bundle.main.url(forResource: "Unduck", withExtension: "driver") }
+    static let installedURL = URL(fileURLWithPath: "/Library/Audio/Plug-Ins/HAL/Duckproof.driver")
+    static var bundledURL: URL? { Bundle.main.url(forResource: "Duckproof", withExtension: "driver") }
 
     enum Failure: LocalizedError {
         case cancelled
@@ -32,25 +32,25 @@ enum DriverManager {
         return !isInstalled || version(at: installedURL) != version(at: bundled)
     }
 
-    static var isDeviceLoaded: Bool { AudioSystem.device(uid: unduckDeviceUID) != nil }
+    static var isDeviceLoaded: Bool { AudioSystem.device(uid: duckproofDeviceUID) != nil }
 
     static func install() throws {
         guard let source = bundledURL else { throw Failure.script("Driver not found inside the app.") }
         let destination = shellQuote(installedURL.path)
         try runAsAdministrator("""
-            /bin/rm -rf \(destination) && \
+            /bin/rm -rf \(destination) /Library/Audio/Plug-Ins/HAL/Unduck.driver && \
             /bin/mkdir -p /Library/Audio/Plug-Ins/HAL && \
             /usr/bin/ditto \(shellQuote(source.path)) \(destination) && \
             /usr/sbin/chown -R root:wheel \(destination) && \
             /usr/bin/killall coreaudiod
-            """, prompt: "Unduck is installing its virtual audio device.")
+            """, prompt: "Duckproof is installing its virtual audio device.")
         try waitForDevice(present: true)
     }
 
     static func uninstall() throws {
         try runAsAdministrator("""
             /bin/rm -rf \(shellQuote(installedURL.path)) && /usr/bin/killall coreaudiod
-            """, prompt: "Unduck is removing its virtual audio device.")
+            """, prompt: "Duckproof is removing its virtual audio device.")
     }
 
     /// coreaudiod takes a second or two to come back after being relaunched.

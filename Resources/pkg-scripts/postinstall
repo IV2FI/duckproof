@@ -1,12 +1,14 @@
 #!/bin/sh
 # Install the driver bundled in the app, reload Core Audio (no Mac restart needed),
-# then open Unduck for the logged-in user.
-APP="$3/Applications/Unduck.app"
-DRIVER="$3/Library/Audio/Plug-Ins/HAL/Unduck.driver"
+# then open Duckproof for the logged-in user.
+APP="$3/Applications/Duckproof.app"
+DRIVER="$3/Library/Audio/Plug-Ins/HAL/Duckproof.driver"
 
 /bin/rm -rf "$DRIVER"
+# Duckproof used to be called Unduck: remove the old app and driver.
+/bin/rm -rf "$3/Applications/Unduck.app" "$3/Library/Audio/Plug-Ins/HAL/Unduck.driver"
 /bin/mkdir -p "$3/Library/Audio/Plug-Ins/HAL"
-/usr/bin/ditto "$APP/Contents/Resources/Unduck.driver" "$DRIVER"
+/usr/bin/ditto "$APP/Contents/Resources/Duckproof.driver" "$DRIVER"
 /usr/sbin/chown -R root:wheel "$DRIVER"
 /usr/bin/killall coreaudiod || true
 

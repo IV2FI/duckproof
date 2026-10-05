@@ -1,4 +1,4 @@
-#include "UnduckAudio.h"
+#include "DuckproofAudio.h"
 
 #include <AudioToolbox/AudioToolbox.h>
 #include <math.h>
@@ -211,7 +211,7 @@ OSStatus ud_passthrough_start(UDPassthrough *pt, AudioObjectID inputDevice, Audi
                                     kAudioUnitScope_Input, 0, &callback, sizeof callback)) != noErr) goto fail;
     if ((err = AudioUnitInitialize(pt->outputUnit)) != noErr) goto fail;
 
-    // Input: an IOProc directly on the Unduck driver.
+    // Input: an IOProc directly on the Duckproof driver.
     if ((err = AudioDeviceCreateIOProcID(inputDevice, input_proc, pt, &pt->ioProcID)) != noErr) goto fail;
     if ((err = AudioDeviceStart(inputDevice, pt->ioProcID)) != noErr) goto fail;
     if ((err = AudioOutputUnitStart(pt->outputUnit)) != noErr) goto fail;

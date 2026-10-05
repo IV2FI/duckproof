@@ -1,7 +1,7 @@
 #!/bin/bash
 # Builds, signs and notarizes a release, tags it and publishes it on GitHub.
 #   ./scripts/release.sh 1.0.1
-# Needs the Developer ID certificates in the keychain, the "unduck" notarytool profile and `gh` logged in.
+# Needs the Developer ID certificates in the keychain, the "duckproof" notarytool profile and `gh` logged in.
 set -euo pipefail
 
 VERSION="${1:?usage: release.sh <version>}"
@@ -15,12 +15,12 @@ cd "$ROOT"
 
 [ -z "$(git status --porcelain)" ] || { echo "Commit your changes first." >&2; exit 1; }
 
-UNDUCK_VERSION="$VERSION" UNDUCK_BUILD="$(git rev-list --count HEAD)" \
+DUCKPROOF_VERSION="$VERSION" DUCKPROOF_BUILD="$(git rev-list --count HEAD)" \
 APP_SIGN_ID="$APP_ID" PKG_SIGN_ID="$PKG_ID" \
 NOTARY_PROFILE=unduck \
   ./scripts/build.sh
 
-spctl -a -t install "build/Unduck-$VERSION.pkg"
+spctl -a -t install "build/Duckproof-$VERSION.pkg"
 git tag "v$VERSION"
 git push origin main "v$VERSION"
-gh release create "v$VERSION" "build/Unduck-$VERSION.pkg" --title "Unduck $VERSION" --generate-notes
+gh release create "v$VERSION" "build/Duckproof-$VERSION.pkg" --title "Duckproof $VERSION" --generate-notes

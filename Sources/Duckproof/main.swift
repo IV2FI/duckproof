@@ -1,6 +1,6 @@
 import Foundation
 
-// `Unduck --diagnose`: the Mac's audio state, handy for debugging on someone else's machine.
+// `Duckproof --diagnose`: the Mac's audio state, handy for debugging on someone else's machine.
 if CommandLine.arguments.contains("--diagnose") {
     let defaultInput = AudioSystem.defaultDevice(input: true)?.uid
     let defaultOutput = AudioSystem.defaultDevice(input: false)?.uid
@@ -22,4 +22,4 @@ if CommandLine.arguments.contains("--diagnose") {
     exit(0)
 }
 
-UnduckApp.main()
+DuckproofApp.main()

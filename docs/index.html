@@ -3,15 +3,15 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Unduck: Stop FaceTime from Lowering Your Music on Mac (Free)</title>
-<meta name="description" content="Unduck is a free, open-source Mac menu bar app that turns off FaceTime audio ducking, so music, videos and games keep their volume during calls. Works with AirPods.">
+<title>Duckproof: Stop FaceTime from Lowering Your Music on Mac (Free)</title>
+<meta name="description" content="Duckproof is a free, open-source Mac menu bar app that turns off FaceTime audio ducking, so music, videos and games keep their volume during calls. Works with AirPods.">
 <meta name="keywords" content="FaceTime audio ducking, FaceTime lowers volume Mac, music quiet during FaceTime call, disable audio ducking macOS, AirPods FaceTime volume">
-<link rel="canonical" href="https://iv2fi.github.io/unduck/">
+<link rel="canonical" href="https://iv2fi.github.io/duckproof/">
 <link rel="icon" href="icon.png">
-<meta property="og:title" content="Unduck: stop FaceTime from lowering your music on Mac">
+<meta property="og:title" content="Duckproof: stop FaceTime from lowering your music on Mac">
 <meta property="og:description" content="Free, open-source menu bar app that turns off FaceTime audio ducking on macOS.">
-<meta property="og:image" content="https://iv2fi.github.io/unduck/media/unduck-launch-poster.jpg">
-<meta property="og:video" content="https://iv2fi.github.io/unduck/media/unduck-launch.mp4">
+<meta property="og:image" content="https://iv2fi.github.io/duckproof/media/duckproof-launch-poster.jpg">
+<meta property="og:video" content="https://iv2fi.github.io/duckproof/media/duckproof-launch.mp4">
 <meta property="og:video:type" content="video/mp4">
 <meta property="og:type" content="website">
 <meta name="twitter:card" content="summary_large_image">
@@ -19,12 +19,12 @@
 {
   "@context": "https://schema.org",
   "@type": "SoftwareApplication",
-  "name": "Unduck",
+  "name": "Duckproof",
   "operatingSystem": "macOS 14.2 or later",
   "applicationCategory": "UtilitiesApplication",
   "description": "Free, open-source menu bar app that stops FaceTime from lowering the volume of other apps (audio ducking) on Mac.",
   "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
-  "downloadUrl": "https://github.com/iv2fi/unduck/releases/latest",
+  "downloadUrl": "https://github.com/iv2fi/duckproof/releases/latest",
   "license": "https://www.gnu.org/licenses/gpl-3.0.html",
   "author": { "@type": "Person", "name": "V2F", "url": "https://www.youtube.com/@V2F" }
 }
@@ -73,28 +73,29 @@
 <body>
 <main>
   <header>
-    <img src="icon.png" alt="Unduck icon: a yellow duck with a slash">
+    <img src="icon.png" alt="Duckproof icon: a yellow duck with a slash">
     <h1>Stop FaceTime from lowering your music on Mac</h1>
-    <p class="lede">Unduck is a free, open-source menu bar app that turns off FaceTime audio ducking, so music, videos and games keep their volume during calls.</p>
-    <a class="button" href="https://github.com/iv2fi/unduck/releases/latest">Download for macOS</a>
-    <div class="meta">Free · Open source · Notarized by Apple · macOS 14.2+ · Apple Silicon &amp; Intel · <a href="https://github.com/iv2fi/unduck">Source on GitHub</a></div>
+    <p class="lede">Duckproof is a free, open-source menu bar app that turns off FaceTime audio ducking, so music, videos and games keep their volume during calls.</p>
+    <a class="button" href="https://github.com/iv2fi/duckproof/releases/latest">Download for macOS</a>
+    <div class="meta">Free · Open source · Notarized by Apple · macOS 14.2+ · Apple Silicon &amp; Intel · <a href="https://github.com/iv2fi/duckproof">Source on GitHub</a></div>
   </header>
 
   <section class="demo" id="demo">
-    <video controls playsinline preload="metadata" poster="media/unduck-launch-poster.jpg">
-      <source src="media/unduck-launch.mp4" type="video/mp4">
+    <video controls playsinline preload="metadata" poster="media/duckproof-launch-poster.jpg">
+      <source src="media/duckproof-launch.mp4" type="video/mp4">
     </video>
-    <p>🔊 Turn the sound on: hear the music get ducked when the call starts, then come back with Unduck.</p>
+    <p>🔊 Turn the sound on: hear the music get ducked when the call starts, then come back with Duckproof.</p>
   </section>
 
   <h2>Sound familiar?</h2>
   <blockquote>Every time I start a FaceTime call, my music gets super quiet.</blockquote>
   <blockquote>YouTube is almost silent while I'm on FaceTime, and there's no setting to stop it.</blockquote>
-  <p>That's <b>audio ducking</b>: during a FaceTime call, macOS automatically lowers the volume of every other app. Apple gives you no way to turn it off. Unduck does.</p>
+  <p>That's <b>audio ducking</b>: during a FaceTime call, macOS automatically lowers the volume of every other app. Apple gives you no way to turn it off. Duckproof does.</p>
 
   <h2>What you get</h2>
   <div class="grid">
     <div class="card"><b>🦆 No more ducking</b><span>Other apps keep their volume during FaceTime calls.</span></div>
+    <div class="card"><b>🎵 Hands off your music</b><span>Only the call takes a detour. Music and videos keep full quality, zero added latency.</span></div>
     <div class="card"><b>🎚 Your own ducking level</b><span>Off by default, or lower other apps by 6 to 30 dB during calls.</span></div>
     <div class="card"><b>🔊 FaceTime volume boost</b><span>Up to 300%, with a soft limiter so voices stay clean.</span></div>
     <div class="card"><b>🎧 Works with AirPods</b><span>And any headphones, speakers or audio interface.</span></div>
@@ -103,31 +104,31 @@
   </div>
 
   <h2>How it works</h2>
-  <p>macOS ducks other apps on the audio device FaceTime plays to. Unduck adds a small virtual audio device, also called <i>Unduck</i>. FaceTime plays into it, and Unduck forwards the call to your real headphones, so macOS has nothing to duck.</p>
+  <p>macOS ducks other apps on the audio device FaceTime plays to. Duckproof adds a small virtual audio device, also called <i>Duckproof</i>. FaceTime plays into it, and Duckproof forwards the call to your real headphones, so macOS has nothing to duck.</p>
   <pre>Before:  FaceTime ──► AirPods ◄── Music   (Music gets lowered)
-After:   FaceTime ──► Unduck ──► AirPods ◄── Music   (nothing is lowered)</pre>
+After:   FaceTime ──► Duckproof ──► AirPods ◄── Music   (nothing is lowered)</pre>
 
   <h2>Install in a minute</h2>
   <ol>
-    <li>Download <code>Unduck-x.y.z.pkg</code> from the <a href="https://github.com/iv2fi/unduck/releases/latest">latest release</a> and open it. It's signed and notarized by Apple.</li>
-    <li>Unduck installs its audio driver (no restart needed) and opens.</li>
-    <li>In FaceTime, choose <b>Video › Audio Output › Unduck</b>. Done.</li>
+    <li>Download <code>Duckproof-x.y.z.pkg</code> from the <a href="https://github.com/iv2fi/duckproof/releases/latest">latest release</a> and open it. It's signed and notarized by Apple.</li>
+    <li>Duckproof installs its audio driver (no restart needed) and opens.</li>
+    <li>In FaceTime, choose <b>Video › Audio Output › Duckproof</b>. Done.</li>
   </ol>
 
   <h2>FAQ</h2>
   <h3>Audio sounds muffled or like a phone call?</h3>
   <p>You're probably using your headphones' microphone over Bluetooth. When an app uses the mic of Bluetooth headphones (AirPods included), they switch to a low-quality "headset" codec for <b>all</b> audio. It's a Bluetooth limitation. Fix: in FaceTime, choose <b>Video › Microphone</b> and pick your Mac's or iPhone's microphone instead.</p>
-  <h3>Why does Unduck ask for microphone access?</h3>
-  <p>Unduck reads the virtual audio channel FaceTime plays into, and macOS counts reading any audio channel as "using the microphone". Unduck never listens to your real microphone; the orange indicator only shows during calls.</p>
+  <h3>Why does Duckproof ask for microphone access?</h3>
+  <p>Duckproof reads the virtual audio channel FaceTime plays into, and macOS counts reading any audio channel as "using the microphone". Duckproof never listens to your real microphone; the orange indicator only shows during calls.</p>
   <h3>Does it work with Zoom, Discord, Teams or WhatsApp?</h3>
-  <p>Yes, if the app lets you choose a speaker: pick <b>Unduck</b> in its audio settings.</p>
+  <p>Yes, if the app lets you choose a speaker: pick <b>Duckproof</b> in its audio settings.</p>
   <h3>Does it add latency?</h3>
   <p>About 20 ms, unnoticeable next to Bluetooth's own latency.</p>
 
   <footer>
-    <p>Unduck is not affiliated with Apple. FaceTime is a trademark of Apple Inc.<br>
+    <p>Duckproof is not affiliated with Apple. FaceTime is a trademark of Apple Inc.<br>
     Virtual audio driver based on <a href="https://github.com/ExistentialAudio/BlackHole">BlackHole</a> by Existential Audio (GPL-3.0).</p>
-    <p>Made by <a href="https://www.youtube.com/@V2F">V2F</a> · <a href="https://github.com/iv2fi/unduck">GitHub</a> · <a href="https://github.com/iv2fi/unduck/issues">Report a problem</a></p>
+    <p>Made by <a href="https://www.youtube.com/@V2F">V2F</a> · <a href="https://github.com/iv2fi/duckproof">GitHub</a> · <a href="https://github.com/iv2fi/duckproof/issues">Report a problem</a></p>
   </footer>
 </main>
 </body>

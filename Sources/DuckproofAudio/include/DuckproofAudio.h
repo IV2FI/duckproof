@@ -1,10 +1,10 @@
-#ifndef UNDUCK_AUDIO_H
-#define UNDUCK_AUDIO_H
+#ifndef DUCKPROOF_AUDIO_H
+#define DUCKPROOF_AUDIO_H
 
 #include <CoreAudio/CoreAudio.h>
 #include <stdint.h>
 
-/// Continuously copies a device's input (the Unduck driver, where FaceTime plays)
+/// Continuously copies a device's input (the Duckproof driver, where FaceTime plays)
 /// to an output device (the AirPods) through a small ring buffer.
 /// The two clocks aren't synchronized, so the buffer skips or pads with silence
 /// when it drifts too far: inaudible in practice for speech.

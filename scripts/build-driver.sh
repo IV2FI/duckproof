@@ -1,5 +1,5 @@
 #!/bin/bash
-# Builds the "Unduck" virtual audio driver from the BlackHole sources (GPL-3.0, git submodule).
+# Builds the "Duckproof" virtual audio driver from the BlackHole sources (GPL-3.0, git submodule).
 # The driver is renamed (name, UID, bundle ID, factory UUID) so it never clashes with an
 # installed BlackHole, and because BlackHole's license forbids redistributing a modified
 # build under the BlackHole name.
@@ -7,14 +7,14 @@ set -euo pipefail
 
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 SRC="$ROOT/vendor/BlackHole/BlackHole/BlackHole.c"
-OUT="$ROOT/build/Unduck.driver"
-VERSION="${UNDUCK_VERSION:-1.0.0}"
-BUILD="${UNDUCK_BUILD:-1}"
+OUT="$ROOT/build/Duckproof.driver"
+VERSION="${DUCKPROOF_VERSION:-1.0.0}"
+BUILD="${DUCKPROOF_BUILD:-1}"
 
 # Never change these once released: the app and users' FaceTime settings rely on them.
-DRIVER_BUNDLE_ID="app.unduck.driver"
-DEVICE_NAME="Unduck"
-FACTORY_UUID="4CDB72C4-6773-48EF-A19D-715729A5EDE0"
+DRIVER_BUNDLE_ID="app.duckproof.driver"
+DEVICE_NAME="Duckproof"
+FACTORY_UUID="92BC3CD1-C07A-4A72-864A-C667F58CB200"
 
 [ -f "$SRC" ] || git -C "$ROOT" submodule update --init vendor/BlackHole
 
@@ -28,12 +28,12 @@ clang -bundle -O2 -Wno-everything \
   -DkDevice_Name="\"$DEVICE_NAME\"" \
   -DkDevice2_Name="\"$DEVICE_NAME Mirror\"" \
   -DkPlugIn_BundleID="\"$DRIVER_BUNDLE_ID\"" \
-  -DkPlugIn_Icon="\"Unduck.icns\"" \
-  -DkManufacturer_Name="\"Unduck (based on BlackHole by Existential Audio)\"" \
+  -DkPlugIn_Icon="\"Duckproof.icns\"" \
+  -DkManufacturer_Name="\"Duckproof (based on BlackHole by Existential Audio)\"" \
   -DkSampleRates="44100,48000" \
   -DkCanBeDefaultSystemDevice=false \
   -framework CoreAudio -framework CoreFoundation -framework Accelerate \
-  -o "$OUT/Contents/MacOS/Unduck" "$SRC"
+  -o "$OUT/Contents/MacOS/Duckproof" "$SRC"
 
 cat > "$OUT/Contents/Info.plist" <<PLIST
 <?xml version="1.0" encoding="UTF-8"?>
@@ -41,10 +41,10 @@ cat > "$OUT/Contents/Info.plist" <<PLIST
 <plist version="1.0">
 <dict>
 	<key>CFBundleDevelopmentRegion</key><string>English</string>
-	<key>CFBundleExecutable</key><string>Unduck</string>
+	<key>CFBundleExecutable</key><string>Duckproof</string>
 	<key>CFBundleIdentifier</key><string>$DRIVER_BUNDLE_ID</string>
 	<key>CFBundleInfoDictionaryVersion</key><string>6.0</string>
-	<key>CFBundleName</key><string>Unduck</string>
+	<key>CFBundleName</key><string>Duckproof</string>
 	<key>CFBundlePackageType</key><string>BNDL</string>
 	<key>CFBundleShortVersionString</key><string>$VERSION</string>
 	<key>CFBundleVersion</key><string>$BUILD</string>
@@ -61,6 +61,6 @@ cat > "$OUT/Contents/Info.plist" <<PLIST
 PLIST
 
 cp "$ROOT/vendor/BlackHole/LICENSE" "$OUT/Contents/Resources/LICENSE-BlackHole.txt"
-[ -f "$ROOT/build/AppIcon.icns" ] && cp "$ROOT/build/AppIcon.icns" "$OUT/Contents/Resources/Unduck.icns"
+[ -f "$ROOT/build/AppIcon.icns" ] && cp "$ROOT/build/AppIcon.icns" "$OUT/Contents/Resources/Duckproof.icns"
 
 echo "Driver: $OUT"

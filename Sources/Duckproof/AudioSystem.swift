@@ -3,7 +3,7 @@ import CoreAudio
 import Foundation
 
 /// UID of the virtual device created by our driver (see scripts/build-driver.sh).
-let unduckDeviceUID = "Unduck_UID"
+let duckproofDeviceUID = "Duckproof_UID"
 
 struct AudioDevice: Identifiable, Hashable {
     let id: AudioObjectID
@@ -15,9 +15,9 @@ struct AudioDevice: Identifiable, Hashable {
 
     var isBuiltIn: Bool { transport == kAudioDeviceTransportTypeBuiltIn }
     var isBluetooth: Bool { transport == kAudioDeviceTransportTypeBluetooth || transport == kAudioDeviceTransportTypeBluetoothLE }
-    var isUnduck: Bool { uid == unduckDeviceUID }
+    var isDuckproof: Bool { uid == duckproofDeviceUID }
     /// Devices not to offer: ours, private aggregates, and other routing tools' devices.
-    var isUserFacing: Bool { !isUnduck && transport != kAudioDeviceTransportTypeAggregate && !uid.hasPrefix("BlackHole") && !uid.hasPrefix("BGM") }
+    var isUserFacing: Bool { !isDuckproof && transport != kAudioDeviceTransportTypeAggregate && !uid.hasPrefix("BlackHole") && !uid.hasPrefix("BGM") }
 }
 
 struct AudioProcess {

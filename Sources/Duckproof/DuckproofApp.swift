@@ -3,7 +3,7 @@ import AVFoundation
 import ServiceManagement
 import SwiftUI
 
-struct UnduckApp: App {
+struct DuckproofApp: App {
     @NSApplicationDelegateAdaptor(AppDelegate.self) private var delegate
 
     var body: some Scene {
@@ -94,7 +94,7 @@ private struct MenuContent: View {
         }
         Divider()
 
-        Toggle("Enable Unduck", isOn: $controller.enabled)
+        Toggle("Enable Duckproof", isOn: $controller.enabled)
         CallSettings(controller: controller)
         Divider()
 
@@ -103,16 +103,16 @@ private struct MenuContent: View {
         Button("Settings…") { delegate.showSettings() }
             .keyboardShortcut(",")
         if let release = updates.available {
-            Button("Update Available: Unduck \(release.version)…") { NSWorkspace.shared.open(release.url) }
+            Button("Update Available: Duckproof \(release.version)…") { NSWorkspace.shared.open(release.url) }
         }
         Divider()
-        Button("Quit Unduck") { NSApp.terminate(nil) }
+        Button("Quit Duckproof") { NSApp.terminate(nil) }
             .keyboardShortcut("q")
     }
 }
 
-/// Opened by double-clicking Unduck in Applications, for when the menu bar icon is hidden
-/// (notch, Bartender, Hidden Bar…). Closing it keeps Unduck running in the background.
+/// Opened by double-clicking Duckproof in Applications, for when the menu bar icon is hidden
+/// (notch, Bartender, Hidden Bar…). Closing it keeps Duckproof running in the background.
 private struct SettingsView: View {
     @ObservedObject var controller: Controller
     @ObservedObject var updates: UpdateChecker
@@ -129,7 +129,7 @@ private struct SettingsView: View {
                         }
                     }
                 }
-                Toggle("Enable Unduck", isOn: $controller.enabled)
+                Toggle("Enable Duckproof", isOn: $controller.enabled)
             }
             Section("During Calls") {
                 CallSettings(controller: controller)
@@ -143,7 +143,7 @@ private struct SettingsView: View {
                 Toggle("Open at Login", isOn: $controller.launchAtLogin)
                 LabeledContent("Version \(UpdateChecker.currentVersion)") {
                     if let release = updates.available {
-                        Button("Download Unduck \(release.version)") { NSWorkspace.shared.open(release.url) }
+                        Button("Download Duckproof \(release.version)") { NSWorkspace.shared.open(release.url) }
                     } else {
                         Button("Check for Updates") { delegate.checkForUpdates() }
                             .disabled(UpdateChecker.repository == nil)
@@ -153,12 +153,12 @@ private struct SettingsView: View {
             Section {
                 HStack {
                     Button("Reinstall Audio Driver…") { delegate.installDriver() }
-                    Button("Uninstall Unduck…") { delegate.uninstall() }
+                    Button("Uninstall Duckproof…") { delegate.uninstall() }
                     Spacer()
-                    Button("Quit Unduck") { NSApp.terminate(nil) }
+                    Button("Quit Duckproof") { NSApp.terminate(nil) }
                 }
             } footer: {
-                Text("Unduck lives in the menu bar. Closing this window doesn't quit it.")
+                Text("Duckproof lives in the menu bar. Closing this window doesn't quit it.")
                     .font(.footnote)
                     .foregroundStyle(.secondary)
             }
@@ -207,7 +207,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         if settingsWindow == nil {
             let window = NSWindow(contentViewController: NSHostingController(
                 rootView: SettingsView(controller: controller, updates: updates, delegate: self)))
-            window.title = "Unduck"
+            window.title = "Duckproof"
             window.styleMask = [.titled, .closable, .miniaturizable]
             window.isReleasedWhenClosed = false
             window.center()
@@ -217,7 +217,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         settingsWindow?.makeKeyAndOrderFront(nil)
     }
 
-    /// First launch (or update): driver, access to read the Unduck device, launch at login, FaceTime setup.
+    /// First launch (or update): driver, access to read the Duckproof device, launch at login, FaceTime setup.
     /// Returns true on the very first run.
     @discardableResult
     private func onboard() -> Bool {
@@ -227,14 +227,14 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
         if AVCaptureDevice.authorizationStatus(for: .audio) == .notDetermined {
             _ = alert(
-                "Why does Unduck need microphone access?",
+                "Why does Duckproof need microphone access?",
                 """
-                To stop FaceTime from lowering your other apps, Unduck gives it its own virtual \
-                audio channel to play into. Unduck then reads that channel and sends it to your \
+                To stop FaceTime from lowering your other apps, Duckproof gives it its own virtual \
+                audio channel to play into. Duckproof then reads that channel and sends it to your \
                 headphones. macOS counts reading any audio channel as "using the microphone", \
                 even a virtual one, hence the permission.
 
-                Unduck never listens to your real microphone. The orange indicator only appears during calls.
+                Duckproof never listens to your real microphone. The orange indicator only appears during calls.
                 """,
                 buttons: ["Continue"])
         }
@@ -253,7 +253,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     func installDriver(explain: Bool = false) {
         if explain {
             let proceed = alert(
-                "Unduck needs to install its audio device",
+                "Duckproof needs to install its audio device",
                 "It's a small virtual audio driver (based on BlackHole) that FaceTime will play into. "
                 + "macOS will ask for your password. Audio cuts out for a second during install; no restart needed.",
                 buttons: ["Install", "Later"])
@@ -274,9 +274,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             "Last step: set up FaceTime (once)",
             """
             In FaceTime, open the Video menu in the menu bar and choose \
-            Audio Output › Unduck.
+            Audio Output › Duckproof.
 
-            FaceTime then plays into Unduck, which forwards it to your headphones \
+            FaceTime then plays into Duckproof, which forwards it to your headphones \
             without macOS lowering other apps.
 
             Tip: if audio sounds like a phone call, pick your Mac's or iPhone's \
@@ -292,12 +292,12 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         updates.check { result in
             switch result {
             case .success(let release?):
-                if self.alert("Unduck \(release.version) is available",
+                if self.alert("Duckproof \(release.version) is available",
                               "You have version \(UpdateChecker.currentVersion).", buttons: ["Download", "Later"]) {
                     NSWorkspace.shared.open(release.url)
                 }
             case .success(nil):
-                _ = self.alert("You're up to date", "Unduck \(UpdateChecker.currentVersion) is the latest version.", buttons: ["OK"])
+                _ = self.alert("You're up to date", "Duckproof \(UpdateChecker.currentVersion) is the latest version.", buttons: ["OK"])
             case .failure(let error):
                 _ = self.alert("Couldn't check for updates", error.localizedDescription, buttons: ["OK"])
             }
@@ -305,8 +305,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     }
 
     func uninstall() {
-        guard alert("Uninstall Unduck?",
-                    "The audio driver will be removed (password required) and Unduck will no longer open at login. "
+        guard alert("Uninstall Duckproof?",
+                    "The audio driver will be removed (password required) and Duckproof will no longer open at login. "
                     + "Remember to switch FaceTime's audio output back to your headphones.",
                     buttons: ["Uninstall", "Cancel"]) else { return }
         controller.enabled = false
@@ -319,8 +319,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             _ = alert("Uninstall incomplete", error.localizedDescription, buttons: ["OK"])
             return
         }
-        UserDefaults.standard.removePersistentDomain(forName: Bundle.main.bundleIdentifier ?? "app.unduck.Unduck")
-        _ = alert("Unduck is uninstalled", "All that's left is to move Unduck.app to the Trash.", buttons: ["OK"])
+        UserDefaults.standard.removePersistentDomain(forName: Bundle.main.bundleIdentifier ?? "app.duckproof.Duckproof")
+        _ = alert("Duckproof is uninstalled", "All that's left is to move Duckproof.app to the Trash.", buttons: ["OK"])
         NSWorkspace.shared.activateFileViewerSelecting([Bundle.main.bundleURL])
         NSApp.terminate(nil)
     }
