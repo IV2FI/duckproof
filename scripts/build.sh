@@ -42,6 +42,7 @@ lipo -create .build/arm64/release/Duckproof .build/x86_64/release/Duckproof \
 cp "$BUILD/AppIcon.icns" "$APP/Contents/Resources/"
 cp -R "$BUILD/Duckproof.driver" "$APP/Contents/Resources/"
 cp "$ROOT/LICENSE" "$APP/Contents/Resources/LICENSE.txt"
+cp -R "$ROOT/Resources/en.lproj" "$ROOT/Resources/fr.lproj" "$APP/Contents/Resources/"
 
 cat > "$APP/Contents/Info.plist" <<PLIST
 <?xml version="1.0" encoding="UTF-8"?>
@@ -49,6 +50,7 @@ cat > "$APP/Contents/Info.plist" <<PLIST
 <plist version="1.0">
 <dict>
 	<key>CFBundleDevelopmentRegion</key><string>en</string>
+	<key>CFBundleLocalizations</key><array><string>en</string><string>fr</string></array>
 	<key>CFBundleExecutable</key><string>Duckproof</string>
 	<key>CFBundleIconFile</key><string>AppIcon</string>
 	<key>CFBundleIdentifier</key><string>$BUNDLE_ID</string>

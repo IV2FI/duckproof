@@ -13,9 +13,9 @@ enum DriverManager {
 
         var errorDescription: String? {
             switch self {
-            case .cancelled: return "Installation cancelled."
-            case .script(let message): return message
-            case .deviceNotLoaded: return "The driver is installed but macOS hasn't loaded it yet. Restart your Mac if this persists."
+            case .cancelled: return L("Installation cancelled.")
+            case .script(let message): return L(message)
+            case .deviceNotLoaded: return L("The driver is installed but macOS hasn't loaded it yet. Restart your Mac if this persists.")
             }
         }
     }
@@ -43,14 +43,14 @@ enum DriverManager {
             /usr/bin/ditto \(shellQuote(source.path)) \(destination) && \
             /usr/sbin/chown -R root:wheel \(destination) && \
             /usr/bin/killall coreaudiod
-            """, prompt: "Duckproof is installing its virtual audio device.")
+            """, prompt: L("Duckproof is installing its virtual audio device."))
         try waitForDevice(present: true)
     }
 
     static func uninstall() throws {
         try runAsAdministrator("""
             /bin/rm -rf \(shellQuote(installedURL.path)) && /usr/bin/killall coreaudiod
-            """, prompt: "Duckproof is removing its virtual audio device.")
+            """, prompt: L("Duckproof is removing its virtual audio device."))
     }
 
     /// coreaudiod takes a second or two to come back after being relaunched.

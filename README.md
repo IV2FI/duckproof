@@ -8,6 +8,7 @@ Free, open-source menu bar app that disables FaceTime audio ducking on macOS.</p
 <p align="center">
   <a href="https://github.com/iv2fi/duckproof/releases/latest"><b>⬇ Download for macOS</b></a> ·
   <a href="https://iv2fi.github.io/duckproof/">Website</a> ·
+  <a href="https://iv2fi.github.io/duckproof/fr/">Version française</a> ·
   <a href="#faq">FAQ</a>
 </p>
 
@@ -26,13 +27,22 @@ That's **audio ducking**: during a FaceTime call, macOS automatically lowers the
 ## Features
 
 - 🦆 **No more ducking.** Music, videos and games keep their volume during FaceTime calls.
-- 🎵 **Your music never goes through Duckproof.** Only the call audio takes a detour, so music and videos keep their full quality, with zero added latency.
+- 🎵 **Your music never goes through Duckproof.** Only the call audio takes a detour, so music and videos keep their full quality, Spatial Audio and Dolby Atmos, with zero added latency.
 - 🎚 **Or choose your own ducking.** Off by default, or lower other apps by 6, 12, 20 or 30 dB during calls, instead of Apple's all-or-nothing.
 - 🔊 **FaceTime volume boost.** Up to 300%, with a soft limiter so voices don't crackle.
 - 🎧 **Works with AirPods** and any headphones, speakers or audio interface.
-- 🔔 **Notifications** when a call starts without ducking, or if FaceTime isn't set up yet.
-- 🪶 **Lightweight.** Lives in the menu bar, no Dock icon, starts at login. It only processes audio during calls.
+- 🔔 **Setup tips when you need them.** If FaceTime, Zoom, Teams, Discord & co. are still lowering your other apps, Duckproof tells you where to fix it (or stays silent, your call).
+- 🪶 **Zero CPU when you're not on a call.** No background polling: Duckproof sleeps until macOS signals that a call starts. Menu bar only, no Dock icon, starts at login.
+- 🇫🇷 **English and French.**
 - 🔓 **Free and open source** (GPL-3.0). No account, no tracking, no network access except an optional daily update check.
+
+## Why Duckproof works this way
+
+There are two ways to beat ducking. One is to capture every app's audio and re-play it at full volume, which means your music, videos and games all pass through a third-party app: possible delay, clipping, and spatial audio folded down to stereo. Duckproof does the opposite:
+
+- **Only the call takes a detour.** Your music, videos and games play straight to your headphones, untouched: same quality, no added latency, Spatial Audio and Dolby Atmos still work.
+- **Nothing to fight.** macOS still "ducks", but only on Duckproof's virtual output, where the only thing playing is the call. No undocumented tricks that a macOS update could break.
+- **Lightweight.** Duckproof only processes audio while a call is on.
 
 ## How it works
 
@@ -71,7 +81,7 @@ Click the 🦆 in the menu bar, or double-click Duckproof in Applications to ope
 
 ### Audio sounds muffled or like a phone call?
 
-You're probably using your headphones' microphone over Bluetooth. When an app uses the mic of Bluetooth headphones (AirPods included), they have to switch to a "headset" mode that uses a low-quality codec, and **all** your audio goes mono and compressed, not just the call. Duckproof can't change this: it's a Bluetooth limitation.
+You're probably using your headphones' microphone over Bluetooth. When an app uses the mic of Bluetooth headphones (AirPods included), they have to switch to a "headset" mode that uses a low-quality codec, and **all** your audio goes mono and compressed, not just the call.
 
 **Fix:** in FaceTime, open the **Video** menu › **Microphone** and pick another mic, such as your Mac's built-in microphone or your iPhone. Your headphones then stay in high-quality mode. FaceTime remembers this choice.
 
@@ -81,7 +91,7 @@ To stop FaceTime from lowering your other apps, Duckproof gives it its own virtu
 
 ### Does it work with Zoom, Discord, Teams, WhatsApp, Slack, Google Meet?
 
-Yes, if the app lets you pick a speaker/output device: choose **Duckproof** in its audio settings. Duckproof forwards anything that plays into it.
+Yes, if the app lets you pick a speaker/output device: choose **Duckproof** in its audio settings. Duckproof forwards anything that plays into it, and if it sees Zoom, Teams, Discord, Slack, WhatsApp, Webex or a browser call lowering your other apps, it sends a notification telling you exactly where to change it. (Notifications can be turned off in the menu.)
 
 ### I can't hear FaceTime anymore
 

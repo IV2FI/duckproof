@@ -27,6 +27,8 @@ clang -bundle -O2 -Wno-everything \
   -DkHas_Driver_Name_Format=false \
   -DkDevice_Name="\"$DEVICE_NAME\"" \
   -DkDevice2_Name="\"$DEVICE_NAME Mirror\"" \
+  -DkDevice_HasInput=false -DkDevice_HasOutput=true \
+  -DkDevice2_HasInput=true -DkDevice2_HasOutput=false -DkDevice2_IsHidden=true \
   -DkPlugIn_BundleID="\"$DRIVER_BUNDLE_ID\"" \
   -DkPlugIn_Icon="\"Duckproof.icns\"" \
   -DkManufacturer_Name="\"Duckproof (based on BlackHole by Existential Audio)\"" \

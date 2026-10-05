@@ -1,0 +1,147 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Duckproof : empêcher FaceTime de baisser votre musique sur Mac (gratuit)</title>
+<meta name="description" content="Duckproof est une app gratuite et open source pour Mac qui désactive le ducking audio de FaceTime : votre musique, vos vidéos et vos jeux gardent leur volume pendant les appels. Compatible AirPods.">
+<meta name="keywords" content="FaceTime baisse le son Mac, ducking audio FaceTime, musique trop basse pendant appel FaceTime, désactiver ducking macOS, AirPods FaceTime volume">
+<link rel="canonical" href="https://iv2fi.github.io/duckproof/fr/">
+<link rel="alternate" hreflang="en" href="https://iv2fi.github.io/duckproof/">
+<link rel="alternate" hreflang="fr" href="https://iv2fi.github.io/duckproof/fr/">
+<link rel="alternate" hreflang="x-default" href="https://iv2fi.github.io/duckproof/">
+<link rel="icon" href="../icon.png">
+<meta property="og:title" content="Duckproof : FaceTime ne baisse plus votre musique sur Mac">
+<meta property="og:description" content="App gratuite et open source qui désactive le ducking audio de FaceTime sur macOS.">
+<meta property="og:image" content="https://iv2fi.github.io/duckproof/media/duckproof-launch-poster.jpg">
+<meta property="og:video" content="https://iv2fi.github.io/duckproof/media/duckproof-launch.mp4">
+<meta property="og:video:type" content="video/mp4">
+<meta property="og:type" content="website">
+<meta property="og:locale" content="fr_FR">
+<meta name="twitter:card" content="summary_large_image">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "SoftwareApplication",
+  "name": "Duckproof",
+  "inLanguage": "fr",
+  "operatingSystem": "macOS 14.2 ou plus récent",
+  "applicationCategory": "UtilitiesApplication",
+  "description": "App gratuite et open source pour la barre des menus qui empêche FaceTime de baisser le volume des autres apps (ducking audio) sur Mac.",
+  "offers": { "@type": "Offer", "price": "0", "priceCurrency": "EUR" },
+  "downloadUrl": "https://github.com/iv2fi/duckproof/releases/latest",
+  "license": "https://www.gnu.org/licenses/gpl-3.0.html",
+  "author": { "@type": "Person", "name": "V2F", "url": "https://www.youtube.com/@V2F" }
+}
+</script>
+<style>
+  :root {
+    --bg: #fbfaf7; --fg: #1d1d1f; --muted: #5f6368; --card: #ffffff; --line: #e6e3dc;
+    --accent: #1a56b8; --accent-fg: #ffffff; --duck: #ffd23f;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root { --bg: #121314; --fg: #f2f2f2; --muted: #a3a7ad; --card: #1c1d1f; --line: #2c2e31;
+            --accent: #5b9bff; --accent-fg: #0b1220; }
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--fg);
+         font: 17px/1.6 -apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", sans-serif; }
+  main { max-width: 760px; margin: 0 auto; padding: 56px 16px 80px; }
+  header { text-align: center; }
+  header img { width: 112px; height: 112px; }
+  h1 { font-size: clamp(30px, 6vw, 44px); line-height: 1.15; margin: 16px 0 12px; letter-spacing: -0.02em; }
+  .lede { font-size: 19px; color: var(--muted); margin: 0 auto 28px; max-width: 560px; }
+  .button { display: inline-block; background: var(--accent); color: var(--accent-fg); text-decoration: none;
+            font-weight: 600; padding: 13px 26px; border-radius: 12px; }
+  .meta { color: var(--muted); font-size: 14px; margin-top: 10px; }
+  .meta a { color: inherit; }
+  h2 { font-size: 24px; margin: 56px 0 12px; letter-spacing: -0.01em; }
+  h3 { font-size: 17px; margin: 24px 0 4px; }
+  p, li { color: var(--fg); }
+  blockquote { margin: 0 0 8px; padding: 10px 16px; background: var(--card); border: 1px solid var(--line);
+               border-radius: 12px; color: var(--muted); font-style: italic; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; }
+  .card { background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 16px; }
+  .card b { display: block; margin-bottom: 4px; }
+  .card span { color: var(--muted); font-size: 15px; }
+  pre { background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 14px 16px;
+        overflow-x: auto; font: 14px/1.5 ui-monospace, "SF Mono", Menlo, monospace; }
+  code { font: 0.9em ui-monospace, "SF Mono", Menlo, monospace; }
+  ol li, ul li { margin-bottom: 6px; }
+  .demo { margin: 48px 0 0; }
+  .demo video { display: block; width: 100%; aspect-ratio: 16 / 9; border-radius: 16px; border: 1px solid var(--line); background: #000; }
+  .demo p { text-align: center; color: var(--muted); font-size: 15px; margin: 10px 0 0; }
+  .lang { position: absolute; top: 16px; right: 16px; font-size: 14px; color: var(--muted); }
+  .lang a { color: inherit; }
+  footer { margin-top: 64px; color: var(--muted); font-size: 14px; text-align: center; }
+  footer a { color: inherit; }
+</style>
+</head>
+<body>
+<main>
+  <div class="lang"><a href="../" hreflang="en" lang="en">English</a></div>
+  <header>
+    <img src="../icon.png" alt="Icône de Duckproof : un canard jaune barré">
+    <h1>Empêchez FaceTime de baisser votre musique sur Mac</h1>
+    <p class="lede">Duckproof est une app gratuite et open source qui désactive le ducking audio de FaceTime : musique, vidéos et jeux gardent leur volume pendant les appels.</p>
+    <a class="button" href="https://github.com/iv2fi/duckproof/releases/latest">Télécharger pour macOS</a>
+    <div class="meta">Gratuit · Open source · Validé par Apple · macOS 14.2+ · Apple Silicon &amp; Intel · <a href="https://github.com/iv2fi/duckproof">Code source sur GitHub</a></div>
+  </header>
+
+  <section class="demo" id="demo">
+    <video controls playsinline preload="metadata" poster="../media/duckproof-launch-poster.jpg">
+      <source src="../media/duckproof-launch.mp4" type="video/mp4">
+    </video>
+    <p>🔊 Activez le son : la musique s'écrase quand l'appel commence, puis revient avec Duckproof.</p>
+  </section>
+
+  <h2>Ça vous parle ?</h2>
+  <blockquote>Dès que je lance un appel FaceTime, ma musique devient presque inaudible.</blockquote>
+  <blockquote>YouTube est quasi muet pendant mes appels FaceTime, et aucun réglage ne permet de l'éviter.</blockquote>
+  <p>C'est le <b>ducking audio</b> : pendant un appel FaceTime, macOS baisse automatiquement le volume de toutes les autres apps. Apple ne permet pas de le désactiver. Duckproof, si.</p>
+
+  <h2>Ce que fait Duckproof</h2>
+  <div class="grid">
+    <div class="card"><b>🦆 Fini le ducking</b><span>Vos autres apps gardent leur volume pendant les appels FaceTime.</span></div>
+    <div class="card"><b>🎵 Votre musique intacte</b><span>Votre musique ne passe jamais par Duckproof : qualité d'origine, Son spatial et Dolby Atmos préservés, aucune latence ajoutée. Seul l'appel fait un détour.</span></div>
+    <div class="card"><b>🎚 Votre propre niveau</b><span>Désactivé par défaut, ou baissez les autres apps de 6 à 30 dB pendant les appels.</span></div>
+    <div class="card"><b>🔊 Voix plus fortes</b><span>Montez FaceTime jusqu'à 300 %, avec un limiteur doux pour garder des voix propres.</span></div>
+    <div class="card"><b>🎧 Compatible AirPods</b><span>Et tous les casques, enceintes et interfaces audio.</span></div>
+    <div class="card"><b>🪶 Zéro processeur hors appel</b><span>Aucune surveillance en boucle : Duckproof dort jusqu'au début d'un appel. Barre des menus seulement, pas d'icône dans le Dock.</span></div>
+    <div class="card"><b>🔓 Gratuit et open source</b><span>Licence GPL-3.0. Pas de compte, pas de pistage.</span></div>
+  </div>
+
+  <h2>Comment ça marche</h2>
+  <p>macOS baisse le son des autres apps sur la sortie audio où joue FaceTime. Duckproof ajoute une petite sortie audio virtuelle, appelée elle aussi <i>Duckproof</i>. FaceTime joue dedans, et Duckproof renvoie l'appel vers vos vrais écouteurs : macOS n'a plus rien à baisser.</p>
+  <pre>Avant :  FaceTime ──► AirPods ◄── Musique   (la musique baisse)
+Après :  FaceTime ──► Duckproof ──► AirPods ◄── Musique   (rien ne baisse)</pre>
+
+  <h2>Pourquoi cette méthode</h2>
+  <p>Une autre façon de contourner le ducking consiste à capturer le son de chaque app pour le rejouer à plein volume. Votre musique, vos vidéos et vos jeux passent alors par une app tierce : risque de décalage, d'écrêtage, et Son spatial ramené en stéréo. Duckproof ne touche qu'à l'appel, uniquement pendant l'appel, sans aucune astuce non documentée de macOS.</p>
+
+  <h2>Installation en une minute</h2>
+  <ol>
+    <li>Téléchargez <code>Duckproof-x.y.z.pkg</code> depuis la <a href="https://github.com/iv2fi/duckproof/releases/latest">dernière version</a> et ouvrez-le. Il est signé et validé par Apple.</li>
+    <li>Duckproof installe son pilote audio (sans redémarrage) et s'ouvre.</li>
+    <li>Dans FaceTime, choisissez <b>Vidéo › Sortie audio › Duckproof</b>. C'est tout.</li>
+  </ol>
+
+  <h2>Questions fréquentes</h2>
+  <h3>Le son est étouffé, comme au téléphone ?</h3>
+  <p>Vous utilisez sans doute le micro de vos écouteurs Bluetooth. Quand une app utilise le micro d'écouteurs Bluetooth (AirPods compris), ils doivent passer en mode « casque », qui utilise un codec de mauvaise qualité : <b>tout</b> votre son devient mono et compressé, pas seulement l'appel.</p>
+  <p><b>Solution :</b> dans FaceTime, ouvrez le menu <b>Vidéo</b> › <b>Micro</b> et choisissez un autre micro, comme celui de votre Mac ou de votre iPhone. Vos écouteurs restent alors en haute qualité. FaceTime retient ce choix.</p>
+  <h3>Pourquoi Duckproof demande l'accès au micro ?</h3>
+  <p>Duckproof lit le canal audio virtuel dans lequel joue FaceTime, et pour macOS, lire un canal audio, c'est « utiliser le micro ». Duckproof n'écoute jamais votre vrai micro ; le voyant orange n'apparaît que pendant les appels.</p>
+  <h3>Ça marche avec Zoom, Discord, Teams ou WhatsApp ?</h3>
+  <p>Oui, si l'app permet de choisir un haut-parleur : sélectionnez <b>Duckproof</b> dans ses réglages audio. Si Zoom, Teams, Discord, Slack, WhatsApp, Webex ou un appel dans le navigateur baisse encore vos autres apps, Duckproof vous envoie une notification qui indique où changer le réglage.</p>
+  <h3>Ça ajoute de la latence ?</h3>
+  <p>Environ 20 ms sur l'appel uniquement, imperceptible à côté de la latence du Bluetooth. Votre musique et vos vidéos ne sont pas retardées.</p>
+
+  <footer>
+    <p>Duckproof n'est pas affilié à Apple. FaceTime est une marque d'Apple Inc.<br>
+    Pilote audio virtuel basé sur <a href="https://github.com/ExistentialAudio/BlackHole">BlackHole</a> d'Existential Audio (GPL-3.0).</p>
+    <p>Fait par <a href="https://www.youtube.com/@V2F">V2F</a> · <a href="https://github.com/iv2fi/duckproof">GitHub</a> · <a href="https://github.com/iv2fi/duckproof/issues">Signaler un problème</a></p>
+  </footer>
+</main>
+</body>
+</html>

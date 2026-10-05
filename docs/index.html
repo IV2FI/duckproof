@@ -7,6 +7,9 @@
 <meta name="description" content="Duckproof is a free, open-source Mac menu bar app that turns off FaceTime audio ducking, so music, videos and games keep their volume during calls. Works with AirPods.">
 <meta name="keywords" content="FaceTime audio ducking, FaceTime lowers volume Mac, music quiet during FaceTime call, disable audio ducking macOS, AirPods FaceTime volume">
 <link rel="canonical" href="https://iv2fi.github.io/duckproof/">
+<link rel="alternate" hreflang="en" href="https://iv2fi.github.io/duckproof/">
+<link rel="alternate" hreflang="fr" href="https://iv2fi.github.io/duckproof/fr/">
+<link rel="alternate" hreflang="x-default" href="https://iv2fi.github.io/duckproof/">
 <link rel="icon" href="icon.png">
 <meta property="og:title" content="Duckproof: stop FaceTime from lowering your music on Mac">
 <meta property="og:description" content="Free, open-source menu bar app that turns off FaceTime audio ducking on macOS.">
@@ -66,12 +69,15 @@
   .demo { margin: 48px 0 0; }
   .demo video { display: block; width: 100%; aspect-ratio: 16 / 9; border-radius: 16px; border: 1px solid var(--line); background: #000; }
   .demo p { text-align: center; color: var(--muted); font-size: 15px; margin: 10px 0 0; }
+  .lang { position: absolute; top: 16px; right: 16px; font-size: 14px; color: var(--muted); }
+  .lang a { color: inherit; }
   footer { margin-top: 64px; color: var(--muted); font-size: 14px; text-align: center; }
   footer a { color: inherit; }
 </style>
 </head>
 <body>
 <main>
+  <div class="lang"><a href="fr/" hreflang="fr" lang="fr">Français</a></div>
   <header>
     <img src="icon.png" alt="Duckproof icon: a yellow duck with a slash">
     <h1>Stop FaceTime from lowering your music on Mac</h1>
@@ -95,11 +101,11 @@
   <h2>What you get</h2>
   <div class="grid">
     <div class="card"><b>🦆 No more ducking</b><span>Other apps keep their volume during FaceTime calls.</span></div>
-    <div class="card"><b>🎵 Hands off your music</b><span>Only the call takes a detour. Music and videos keep full quality, zero added latency.</span></div>
+    <div class="card"><b>🎵 Hands off your music</b><span>Your music never goes through Duckproof: full quality, Spatial Audio &amp; Atmos preserved, zero added latency. Only the call takes a detour.</span></div>
     <div class="card"><b>🎚 Your own ducking level</b><span>Off by default, or lower other apps by 6 to 30 dB during calls.</span></div>
     <div class="card"><b>🔊 FaceTime volume boost</b><span>Up to 300%, with a soft limiter so voices stay clean.</span></div>
     <div class="card"><b>🎧 Works with AirPods</b><span>And any headphones, speakers or audio interface.</span></div>
-    <div class="card"><b>🪶 Stays out of the way</b><span>Menu bar only, no Dock icon, starts at login.</span></div>
+    <div class="card"><b>🪶 Zero CPU between calls</b><span>No background polling: Duckproof sleeps until a call starts. Menu bar only, no Dock icon.</span></div>
     <div class="card"><b>🔓 Free &amp; open source</b><span>GPL-3.0. No account, no tracking.</span></div>
   </div>
 
@@ -107,6 +113,9 @@
   <p>macOS ducks other apps on the audio device FaceTime plays to. Duckproof adds a small virtual audio device, also called <i>Duckproof</i>. FaceTime plays into it, and Duckproof forwards the call to your real headphones, so macOS has nothing to duck.</p>
   <pre>Before:  FaceTime ──► AirPods ◄── Music   (Music gets lowered)
 After:   FaceTime ──► Duckproof ──► AirPods ◄── Music   (nothing is lowered)</pre>
+
+  <h2>Why it works this way</h2>
+  <p>Another way to beat ducking is to capture every app's audio and re-play it at full volume. That puts your music, videos and games through a third-party app: possible delay, clipping, and Spatial Audio folded down to stereo. Duckproof only touches the call, only while it's on, and doesn't rely on any undocumented macOS trick.</p>
 
   <h2>Install in a minute</h2>
   <ol>
@@ -117,13 +126,14 @@ After:   FaceTime ──► Duckproof ──► AirPods ◄── Music   (nothi
 
   <h2>FAQ</h2>
   <h3>Audio sounds muffled or like a phone call?</h3>
-  <p>You're probably using your headphones' microphone over Bluetooth. When an app uses the mic of Bluetooth headphones (AirPods included), they switch to a low-quality "headset" codec for <b>all</b> audio. It's a Bluetooth limitation. Fix: in FaceTime, choose <b>Video › Microphone</b> and pick your Mac's or iPhone's microphone instead.</p>
+  <p>You're probably using your headphones' microphone over Bluetooth. When an app uses the mic of Bluetooth headphones (AirPods included), they have to switch to a "headset" mode that uses a low-quality codec, and <b>all</b> your audio goes mono and compressed, not just the call.</p>
+  <p><b>Fix:</b> in FaceTime, open the <b>Video</b> menu › <b>Microphone</b> and pick another mic, such as your Mac's built-in microphone or your iPhone. Your headphones then stay in high-quality mode. FaceTime remembers this choice.</p>
   <h3>Why does Duckproof ask for microphone access?</h3>
   <p>Duckproof reads the virtual audio channel FaceTime plays into, and macOS counts reading any audio channel as "using the microphone". Duckproof never listens to your real microphone; the orange indicator only shows during calls.</p>
   <h3>Does it work with Zoom, Discord, Teams or WhatsApp?</h3>
-  <p>Yes, if the app lets you choose a speaker: pick <b>Duckproof</b> in its audio settings.</p>
+  <p>Yes, if the app lets you choose a speaker: pick <b>Duckproof</b> in its audio settings. If Zoom, Teams, Discord, Slack, WhatsApp, Webex or a browser call is still lowering your other apps, Duckproof sends a notification telling you where to change it.</p>
   <h3>Does it add latency?</h3>
-  <p>About 20 ms, unnoticeable next to Bluetooth's own latency.</p>
+  <p>About 20 ms on the call only, unnoticeable next to Bluetooth's own latency. Your music and videos are never delayed.</p>
 
   <footer>
     <p>Duckproof is not affiliated with Apple. FaceTime is a trademark of Apple Inc.<br>

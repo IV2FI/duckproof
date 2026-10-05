@@ -18,12 +18,12 @@ struct DuckproofApp: App {
 extension Controller.Phase {
     var label: String {
         switch self {
-        case .driverMissing: return "⚠️ Audio driver not installed"
-        case .micDenied: return "⚠️ Microphone access denied"
-        case .disabled: return "Paused"
-        case .waiting: return "Ready · waiting for a call"
-        case .ready: return "FaceTime open · waiting for a call"
-        case .inCall: return "In a call · no ducking 🦆"
+        case .driverMissing: return L("⚠️ Audio driver not installed")
+        case .micDenied: return L("⚠️ Microphone access denied")
+        case .disabled: return L("Paused")
+        case .waiting: return L("Ready · waiting for a call")
+        case .ready: return L("FaceTime open · waiting for a call")
+        case .inCall: return L("In a call · no ducking 🦆")
         case .failed(let message): return "⚠️ \(message)"
         }
     }
@@ -44,7 +44,7 @@ private struct CallSettings: View {
         }
         Picker("FaceTime Volume", selection: $controller.faceTimeGain) {
             ForEach([1.0, 1.5, 2.0, 3.0], id: \.self) { gain in
-                Text(gain == 1 ? "100% (unchanged)" : "\(Int(gain * 100))%").tag(gain)
+                Text(verbatim: gain == 1 ? L("100% (unchanged)") : "\(Int(gain * 100))%").tag(gain)
             }
         }
         Picker("Send Call Audio To", selection: $controller.outputUID) {
@@ -82,6 +82,18 @@ private struct MenuLabel: View {
     }
 }
 
+/// Shown when the Notifications switch is on but macOS blocks them.
+private struct NotificationWarning: View {
+    @ObservedObject var controller: Controller
+    @ObservedObject var notifier = Notifier.shared
+
+    var body: some View {
+        if controller.notificationsEnabled && !notifier.allowedBySystem {
+            Button("⚠️ Notifications blocked by macOS · Turn On…") { notifier.fixPermission() }
+        }
+    }
+}
+
 private struct MenuContent: View {
     @ObservedObject var controller: Controller
     @ObservedObject var updates: UpdateChecker
@@ -96,6 +108,7 @@ private struct MenuContent: View {
 
         Toggle("Enable Duckproof", isOn: $controller.enabled)
         CallSettings(controller: controller)
+        NotificationWarning(controller: controller)
         Divider()
 
         PrimaryAction(controller: controller, delegate: delegate)
@@ -140,6 +153,7 @@ private struct SettingsView: View {
             }
             Section("General") {
                 Toggle("Notifications", isOn: $controller.notificationsEnabled)
+                NotificationWarning(controller: controller)
                 Toggle("Open at Login", isOn: $controller.launchAtLogin)
                 LabeledContent("Version \(UpdateChecker.currentVersion)") {
                     if let release = updates.available {
@@ -213,6 +227,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             window.center()
             settingsWindow = window
         }
+        Notifier.shared.refresh()
         NSApp.activate(ignoringOtherApps: true)
         settingsWindow?.makeKeyAndOrderFront(nil)
     }
@@ -254,8 +269,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         if explain {
             let proceed = alert(
                 "Duckproof needs to install its audio device",
-                "It's a small virtual audio driver (based on BlackHole) that FaceTime will play into. "
-                + "macOS will ask for your password. Audio cuts out for a second during install; no restart needed.",
+                "It's a small virtual audio driver (based on BlackHole) that FaceTime will play into. macOS will ask for your password. Audio cuts out for a second during install; no restart needed.",
                 buttons: ["Install", "Later"])
             guard proceed else { return }
         }
@@ -272,16 +286,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     func showFaceTimeGuide() {
         let openFaceTime = alert(
             "Last step: set up FaceTime (once)",
-            """
-            In FaceTime, open the Video menu in the menu bar and choose \
-            Audio Output › Duckproof.
-
-            FaceTime then plays into Duckproof, which forwards it to your headphones \
-            without macOS lowering other apps.
-
-            Tip: if audio sounds like a phone call, pick your Mac's or iPhone's \
-            microphone in FaceTime › Video › Microphone.
-            """,
+            "In FaceTime, open the Video menu in the menu bar and choose Audio Output › Duckproof.\n\nFaceTime then plays into Duckproof, which forwards it to your headphones without macOS lowering other apps.\n\nAudio sounds muffled or like a phone call? You're probably using your headphones' microphone over Bluetooth. When an app uses the mic of Bluetooth headphones (AirPods included), they have to switch to a \"headset\" mode that uses a low-quality codec, and all your audio goes mono and compressed, not just the call.\n\nFix: in FaceTime, open the Video menu › Microphone and pick another mic, such as your Mac's built-in microphone or your iPhone. Your headphones then stay in high-quality mode. FaceTime remembers this choice.",
             buttons: ["Open FaceTime", "Later"])
         if openFaceTime, let url = NSWorkspace.shared.urlForApplication(withBundleIdentifier: Controller.faceTimeBundleID) {
             NSWorkspace.shared.openApplication(at: url, configuration: .init())
@@ -292,12 +297,12 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         updates.check { result in
             switch result {
             case .success(let release?):
-                if self.alert("Duckproof \(release.version) is available",
-                              "You have version \(UpdateChecker.currentVersion).", buttons: ["Download", "Later"]) {
+                if self.alert(L("Duckproof %@ is available", release.version),
+                              L("You have version %@.", UpdateChecker.currentVersion), buttons: ["Download", "Later"]) {
                     NSWorkspace.shared.open(release.url)
                 }
             case .success(nil):
-                _ = self.alert("You're up to date", "Duckproof \(UpdateChecker.currentVersion) is the latest version.", buttons: ["OK"])
+                _ = self.alert("You're up to date", L("Duckproof %@ is the latest version.", UpdateChecker.currentVersion), buttons: ["OK"])
             case .failure(let error):
                 _ = self.alert("Couldn't check for updates", error.localizedDescription, buttons: ["OK"])
             }
@@ -306,8 +311,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
     func uninstall() {
         guard alert("Uninstall Duckproof?",
-                    "The audio driver will be removed (password required) and Duckproof will no longer open at login. "
-                    + "Remember to switch FaceTime's audio output back to your headphones.",
+                    "The audio driver will be removed (password required) and Duckproof will no longer open at login. Remember to switch FaceTime's audio output back to your headphones.",
                     buttons: ["Uninstall", "Cancel"]) else { return }
         controller.enabled = false
         controller.launchAtLogin = false
@@ -329,9 +333,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     private func alert(_ title: String, _ message: String, buttons: [String]) -> Bool {
         NSApp.activate(ignoringOtherApps: true)
         let alert = NSAlert()
-        alert.messageText = title
-        alert.informativeText = message
-        buttons.forEach { alert.addButton(withTitle: $0) }
+        alert.messageText = L(title)
+        alert.informativeText = L(message)
+        buttons.forEach { alert.addButton(withTitle: L($0)) }
         return alert.runModal() == .alertFirstButtonReturn
     }
 }

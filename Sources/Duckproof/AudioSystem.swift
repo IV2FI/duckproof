@@ -2,8 +2,11 @@ import AudioToolbox
 import CoreAudio
 import Foundation
 
-/// UID of the virtual device created by our driver (see scripts/build-driver.sh).
+/// The driver (scripts/build-driver.sh) creates two devices sharing one buffer: "Duckproof", a visible
+/// output only, and a hidden input-only twin that Duckproof reads to forward the call. So Duckproof never
+/// shows up as a microphone, and the visible output is only ever busy because a call app plays into it.
 let duckproofDeviceUID = "Duckproof_UID"
+let duckproofReaderUID = "Duckproof_2_UID"
 
 struct AudioDevice: Identifiable, Hashable {
     let id: AudioObjectID
@@ -93,6 +96,19 @@ enum AudioSystem {
         devices().first { $0.uid == uid }
     }
 
+    /// Finds hidden devices too (they aren't in the device list).
+    static func deviceID(uid: String) -> AudioObjectID? {
+        var address = address(kAudioHardwarePropertyTranslateUIDToDevice)
+        var cfUID = uid as CFString
+        var id = AudioObjectID(kAudioObjectUnknown)
+        var size = UInt32(MemoryLayout<AudioObjectID>.size)
+        let status = withUnsafePointer(to: &cfUID) {
+            AudioObjectGetPropertyData(AudioObjectID(kAudioObjectSystemObject), &address,
+                                       UInt32(MemoryLayout<CFString>.size), $0, &size, &id)
+        }
+        return status == noErr && id != kAudioObjectUnknown ? id : nil
+    }
+
     static func defaultDevice(input: Bool) -> AudioDevice? {
         let selector = input ? kAudioHardwarePropertyDefaultInputDevice : kAudioHardwarePropertyDefaultOutputDevice
         return device(get(AudioObjectID(kAudioObjectSystemObject), selector, default: AudioObjectID(0)))
@@ -173,9 +189,10 @@ enum AudioSystem {
         private var address: AudioObjectPropertyAddress
         private let block: AudioObjectPropertyListenerBlock
 
-        init(_ object: AudioObjectID, _ selector: AudioObjectPropertySelector, handler: @escaping () -> Void) {
+        init(_ object: AudioObjectID, _ selector: AudioObjectPropertySelector,
+             scope: AudioObjectPropertyScope = kAudioObjectPropertyScopeGlobal, handler: @escaping () -> Void) {
             self.object = object
-            self.address = AudioSystem.address(selector)
+            self.address = AudioSystem.address(selector, scope)
             self.block = { _, _ in DispatchQueue.main.async(execute: handler) }
             AudioObjectAddPropertyListenerBlock(object, &address, nil, block)
         }
@@ -186,7 +203,14 @@ enum AudioSystem {
     }
 
     static func listen(_ selector: AudioObjectPropertySelector, on object: AudioObjectID = AudioObjectID(kAudioObjectSystemObject),
-                       handler: @escaping () -> Void) -> Listener {
-        Listener(object, selector, handler: handler)
+                       scope: AudioObjectPropertyScope = kAudioObjectPropertyScopeGlobal, handler: @escaping () -> Void) -> Listener {
+        Listener(object, selector, scope: scope, handler: handler)
+    }
+
+    /// Audio processes are Core Audio objects too; `objectID` is needed to listen to them.
+    static func processObjects() -> [(id: AudioObjectID, bundleID: String, pid: pid_t)] {
+        getArray(AudioObjectID(kAudioObjectSystemObject), kAudioHardwarePropertyProcessObjectList).map {
+            ($0, getString($0, kAudioProcessPropertyBundleID) ?? "", get($0, kAudioProcessPropertyPID, default: pid_t(-1)))
+        }
     }
 }

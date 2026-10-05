@@ -20,7 +20,7 @@ final class UpdateChecker: ObservableObject {
     func start() {
         guard Self.repository != nil else { return }
         DispatchQueue.main.asyncAfter(deadline: .now() + 10) { self.checkIfDue() }
-        timer = Timer.scheduledTimer(withTimeInterval: 3600, repeats: true) { [weak self] _ in self?.checkIfDue() }
+        timer = Timer.scheduledTimer(withTimeInterval: 24 * 3600, repeats: true) { [weak self] _ in self?.checkIfDue() }
     }
 
     private func checkIfDue() {
@@ -64,7 +64,7 @@ final class UpdateChecker: ObservableObject {
         // One notification per new version, not one per day.
         guard let release, defaults.string(forKey: "notifiedVersion") != release.version else { return }
         defaults.set(release.version, forKey: "notifiedVersion")
-        Notifier.shared.post("Duckproof \(release.version) is available", "Click to download it from GitHub.",
+        Notifier.shared.post(L("Duckproof %@ is available", release.version), L("Click to download it from GitHub."),
                              id: "duckproof.update", url: release.url)
     }
 

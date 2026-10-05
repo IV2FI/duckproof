@@ -12,8 +12,24 @@ final class Controller: ObservableObject {
     }
 
     static let faceTimeBundleID = "com.apple.FaceTime"
-    /// Processes that carry the audio of a FaceTime / phone call.
-    private static let callBundleIDs: Set<String> = ["com.apple.FaceTime", "com.apple.avconferenced"]
+    /// Apps that duck everything else during a call, matched by bundle ID prefix, with where to pick Duckproof.
+    /// FaceTime calls run in avconferenced.
+    private struct CallApp { let prefix: String; let name: String; let hint: String }
+    private static let callApps = [
+        CallApp(prefix: "com.apple.avconferenced", name: "FaceTime", hint: "In FaceTime: Video menu › Audio Output › Duckproof."),
+        CallApp(prefix: "com.apple.FaceTime", name: "FaceTime", hint: "In FaceTime: Video menu › Audio Output › Duckproof."),
+        CallApp(prefix: "us.zoom.", name: "Zoom", hint: "In Zoom: Settings › Audio › Speaker › Duckproof."),
+        CallApp(prefix: "com.microsoft.teams", name: "Microsoft Teams", hint: "In Teams: Settings › Devices › Speaker › Duckproof."),
+        CallApp(prefix: "com.hnc.Discord", name: "Discord", hint: "In Discord: User Settings › Voice & Video › Output Device › Duckproof."),
+        CallApp(prefix: "com.tinyspeck.slackmacgap", name: "Slack", hint: "In your Slack huddle: Settings › Speaker › Duckproof."),
+        CallApp(prefix: "net.whatsapp.WhatsApp", name: "WhatsApp", hint: "In WhatsApp's call settings, choose Duckproof as the speaker."),
+        CallApp(prefix: "Cisco-Systems.Spark", name: "Webex", hint: "In Webex: Settings › Audio › Speaker › Duckproof."),
+        CallApp(prefix: "com.google.Chrome", name: "your browser call", hint: "In the call's audio settings (Google Meet: Settings › Audio › Speakers), choose Duckproof."),
+        CallApp(prefix: "com.microsoft.edgemac", name: "your browser call", hint: "In the call's audio settings (Google Meet: Settings › Audio › Speakers), choose Duckproof."),
+        CallApp(prefix: "company.thebrowser.Browser", name: "your browser call", hint: "In the call's audio settings (Google Meet: Settings › Audio › Speakers), choose Duckproof."),
+        CallApp(prefix: "com.brave.Browser", name: "your browser call", hint: "In the call's audio settings (Google Meet: Settings › Audio › Speakers), choose Duckproof."),
+    ]
+    private static func callApp(_ bundleID: String) -> CallApp? { callApps.first { bundleID.hasPrefix($0.prefix) } }
 
     @Published private(set) var phase: Phase = .waiting
     @Published private(set) var outputs: [AudioDevice] = []
@@ -31,7 +47,12 @@ final class Controller: ObservableObject {
     @Published var duckingDB: Double {
         didSet { defaults.set(duckingDB, forKey: "duckingDB"); releaseDucking(); evaluate() }
     }
-    @Published var notificationsEnabled: Bool { didSet { defaults.set(notificationsEnabled, forKey: "notifications") } }
+    @Published var notificationsEnabled: Bool {
+        didSet {
+            defaults.set(notificationsEnabled, forKey: "notifications")
+            if notificationsEnabled { Notifier.shared.requestAuthorization() }
+        }
+    }
     @Published var launchAtLogin: Bool {
         didSet {
             guard launchAtLogin != (SMAppService.mainApp.status == .enabled) else { return }
@@ -50,10 +71,17 @@ final class Controller: ObservableObject {
     private var forcedUntil: Date?
     private var callStarted = false
     private var warnedThisCall = Set<String>()
+    /// Call apps already told to use Duckproof, until their call ends.
+    private var warnedApps = Set<String>()
     private var listeners: [AudioSystem.Listener] = []
     private var duckproofListeners: [AudioSystem.Listener] = []
     private var duckproofID: AudioObjectID = 0
-    private var pollTimer: Timer?
+    /// No polling, ever: macOS tells us when a mic starts or stops (every call uses one), when an app
+    /// starts using audio, when a call app changes output, and when something starts or stops playing
+    /// into the Duckproof output (we read its hidden twin, so only the call app keeps it running).
+    private var micListeners: [AudioObjectID: AudioSystem.Listener] = [:]
+    private var processListeners: [AudioObjectID: [AudioSystem.Listener]] = [:]
+    private var followUp: DispatchWorkItem?
 
     /// Our own ducking while a call is on: the output volume is lowered by `db` (negative)
     /// and FaceTime is boosted by the same amount, so only the other apps get quieter.
@@ -86,6 +114,7 @@ final class Controller: ObservableObject {
         let system = AudioObjectID(kAudioObjectSystemObject)
         listeners = [
             AudioSystem.listen(kAudioHardwarePropertyDevices, on: system) { [weak self] in self?.evaluate() },
+            AudioSystem.listen(kAudioHardwarePropertyProcessObjectList, on: system) { [weak self] in self?.changed() },
             AudioSystem.listen(kAudioHardwarePropertyDefaultOutputDevice, on: system) { [weak self] in self?.evaluate() },
         ]
 
@@ -109,6 +138,7 @@ final class Controller: ObservableObject {
     // MARK: Main logic
 
     func evaluate() {
+        defer { updateWatchers() }
         refreshDevices()
 
         guard let duckproof = AudioSystem.device(uid: duckproofDeviceUID) else {
@@ -134,16 +164,15 @@ final class Controller: ObservableObject {
         let feeders = processes.filter { $0.isRunningOutput && $0.outputDevices.contains(duckproof.id) }
         let feedingDuckproof = !feeders.isEmpty
         let forced = forcedUntil.map { $0 > Date() } ?? false
+        checkCallApps(processes, duckproof: duckproof.id)
 
         guard faceTimeRunning || feedingDuckproof || forced else {
             stopRouting()
-            stopPolling()
             endCall()
             phase = .waiting
             return
         }
 
-        if faceTimeRunning { startPolling() }
         // Only read Duckproof while something actually plays into it: reading an input device
         // turns on the orange mic indicator, which should not stay lit while FaceTime idles.
         if feedingDuckproof || forced {
@@ -155,7 +184,7 @@ final class Controller: ObservableObject {
             stopRouting()
         }
 
-        let callProcesses = processes.filter { Self.callBundleIDs.contains($0.bundleID) }
+        let callProcesses = processes.filter { Self.callApp($0.bundleID)?.name == "FaceTime" }
         let inCall = feedingDuckproof || callProcesses.contains { $0.isRunningInput }
         if inCall {
             if feedingDuckproof { applyDucking() }
@@ -187,19 +216,20 @@ final class Controller: ObservableObject {
     }
 
     private func startRouting(from duckproof: AudioDevice) -> String? {
-        guard let output = targetOutput() else { return "No audio output available" }
-        let rate = AudioSystem.get(duckproof.id, kAudioDevicePropertyNominalSampleRate, default: Float64(48000))
-        if let route, route.input == duckproof.id, route.output == output.id, route.rate == rate { return nil }
+        guard let output = targetOutput() else { return L("No audio output available") }
+        // Read the hidden input-only twin: it receives whatever is played into the visible output.
+        guard let reader = AudioSystem.deviceID(uid: duckproofReaderUID) else { return L("⚠️ Audio driver not installed") }
+        let rate = AudioSystem.get(reader, kAudioDevicePropertyNominalSampleRate, default: Float64(48000))
+        if let route, route.input == reader, route.output == output.id, route.rate == rate { return nil }
 
-        let status = ud_passthrough_start(passthrough, duckproof.id, output.id)
+        let status = ud_passthrough_start(passthrough, reader, output.id)
         guard status == noErr else {
             route = nil
-            return "Can't open \(output.name) (error \(status))"
+            return L("Can't open %@ (error %d)", output.name, Int(status))
         }
-        route = (duckproof.id, output.id, rate)
+        route = (reader, output.id, rate)
         updateGain()
-        routeDescription = "Call audio → \(output.name)"
-        startPolling()
+        routeDescription = L("Call audio → %@", output.name)
         return nil
     }
 
@@ -243,27 +273,35 @@ final class Controller: ObservableObject {
 
     /// FaceTime calls run in avconferenced; any other app playing into Duckproof is named after itself.
     private func appName(_ process: AudioProcess) -> String {
-        if Self.callBundleIDs.contains(process.bundleID) { return "FaceTime" }
+        if let app = Self.callApp(process.bundleID), app.name == "FaceTime" { return app.name }
         return NSRunningApplication(processIdentifier: process.pid)?.localizedName ?? process.bundleID
     }
 
     private func beginCall(feeder: AudioProcess?, callProcesses: [AudioProcess]) {
-        let feedingDuckproof = feeder != nil
         if !callStarted {
             callStarted = true
             if let feeder {
-                let others = appliedDuck.map { String(format: "other apps %.0f dB", $0.db) } ?? "other apps at full volume"
-                notify("Call without ducking 🦆", "\(appName(feeder)) audio → \(targetOutput()?.name ?? "—") · \(others)", key: "start")
+                let others = appliedDuck.map { L("other apps %d dB", Int($0.db.rounded())) } ?? L("other apps at full volume")
+                notify(L("Call without ducking 🦆"), L("%@ audio → %@ · %@", appName(feeder), targetOutput()?.name ?? "—", others), key: "start")
             }
         }
+    }
 
-        // FaceTime isn't playing into Duckproof: it will duck other apps.
-        let faceTimeOutputs = callProcesses.filter(\.isRunningOutput)
-        if !feedingDuckproof, !faceTimeOutputs.isEmpty {
-            notify("FaceTime isn't using Duckproof",
-                   "In FaceTime: Video menu › Audio Output › Duckproof. Otherwise other apps will get quieter.",
-                   key: "output")
+    /// A call app that records and plays at the same time is in a call. If it plays anywhere but
+    /// Duckproof, macOS will duck everything else: say once per call where to change it.
+    private func checkCallApps(_ processes: [AudioProcess], duckproof: AudioObjectID) {
+        var inCall = Set<String>()
+        for process in processes where process.isRunningInput && process.isRunningOutput {
+            guard let app = Self.callApp(process.bundleID) else { continue }
+            inCall.insert(app.name)
+            if process.outputDevices.contains(duckproof) || process.outputDevices.isEmpty { continue }
+            guard notificationsEnabled, enabled, !warnedApps.contains(app.name) else { continue }
+            warnedApps.insert(app.name)
+            let name = L(app.name)
+            Notifier.shared.post(L("%@ is lowering your other apps", name.prefix(1).uppercased() + name.dropFirst()),
+                                 L(app.hint), id: "duckproof.output.\(app.name)")
         }
+        warnedApps.formIntersection(inCall)
     }
 
     private func endCall() {
@@ -289,20 +327,39 @@ final class Controller: ObservableObject {
         guard id != duckproofID else { return }
         duckproofID = id
         duckproofListeners = [
-            AudioSystem.listen(kAudioDevicePropertyDeviceIsRunningSomewhere, on: id) { [weak self] in self?.evaluate() },
+            AudioSystem.listen(kAudioDevicePropertyDeviceIsRunningSomewhere, on: id) { [weak self] in self?.changed() },
             AudioSystem.listen(kAudioDevicePropertyNominalSampleRate, on: id) { [weak self] in self?.evaluate() },
         ]
     }
 
-    /// While FaceTime is open, check every second whether a call has started.
-    private func startPolling() {
-        guard pollTimer == nil else { return }
-        pollTimer = Timer.scheduledTimer(withTimeInterval: 1, repeats: true) { [weak self] _ in self?.evaluate() }
+    /// Something changed: check now, and once more 2 s later (apps often open the mic before their output).
+    private func changed() {
+        evaluate()
+        followUp?.cancel()
+        let work = DispatchWorkItem { [weak self] in self?.evaluate() }
+        followUp = work
+        DispatchQueue.main.asyncAfter(deadline: .now() + 2, execute: work)
     }
 
-    private func stopPolling() {
-        pollTimer?.invalidate()
-        pollTimer = nil
+    /// Keeps the event listeners in sync with the mics and call apps currently present.
+    private func updateWatchers() {
+        let mics = AudioSystem.devices().filter { $0.hasInput && !$0.isDuckproof }
+        for mic in mics where micListeners[mic.id] == nil {
+            micListeners[mic.id] = AudioSystem.listen(kAudioDevicePropertyDeviceIsRunningSomewhere, on: mic.id) { [weak self] in self?.changed() }
+        }
+        let liveMics = Set(mics.map(\.id))
+        micListeners = micListeners.filter { liveMics.contains($0.key) }
+
+        // Call apps: macOS doesn't notify "is running" changes, but it does notify the list of devices a
+        // process uses, which changes whenever it starts, stops or switches its output or input.
+        let callProcesses = AudioSystem.processObjects().filter { $0.pid != getpid() && Self.callApp($0.bundleID) != nil }
+        for process in callProcesses where processListeners[process.id] == nil {
+            processListeners[process.id] = [kAudioObjectPropertyScopeOutput, kAudioObjectPropertyScopeInput].map { scope in
+                AudioSystem.listen(kAudioProcessPropertyDevices, on: process.id, scope: scope) { [weak self] in self?.changed() }
+            }
+        }
+        let liveProcesses = Set(callProcesses.map(\.id))
+        processListeners = processListeners.filter { liveProcesses.contains($0.key) }
     }
 
     // MARK: Diagnostics
