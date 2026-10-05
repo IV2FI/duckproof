@@ -110,7 +110,8 @@
   </div>
 
   <h2>How it works</h2>
-  <p>macOS ducks other apps on the audio device FaceTime plays to. Duckproof adds a small virtual audio device, also called <i>Duckproof</i>. FaceTime plays into it, and Duckproof forwards the call to your real headphones, so macOS has nothing to duck.</p>
+  <p>During a call, macOS lowers everything that plays on the same audio output as FaceTime.</p>
+  <p>So Duckproof gives FaceTime its own virtual audio output, also called <i>Duckproof</i>. FaceTime plays into it, and macOS lowers that output… where FaceTime is the only thing playing. Duckproof then forwards the call to your headphones, while your other apps keep playing there at full volume. In short, macOS ducks into the void.</p>
   <pre>Before:  FaceTime ──► AirPods ◄── Music   (Music gets lowered)
 After:   FaceTime ──► Duckproof ──► AirPods ◄── Music   (nothing is lowered)</pre>
 
