@@ -1,6 +1,7 @@
 import AppKit
 import AVFoundation
 import ServiceManagement
+import UserNotifications
 import DuckproofAudio
 
 /// Orchestration: while FaceTime plays into the Duckproof driver, copy that audio to the chosen
@@ -69,7 +70,6 @@ final class Controller: ObservableObject {
     private var route: (input: AudioObjectID, output: AudioObjectID, rate: Double)?
     private var faceTimeRunning = false
     private var forcedUntil: Date?
-    private var callStarted = false
     private var warnedThisCall = Set<String>()
     /// Call apps already told to use Duckproof, until their call ends.
     private var warnedApps = Set<String>()
@@ -200,7 +200,9 @@ final class Controller: ObservableObject {
     func playTestSound() {
         forcedUntil = Date().addingTimeInterval(3)
         evaluate()
-        let sound = NSSound(named: "Glass")
+        // The duck from the launch film, so the test sounds like Duckproof.
+        let sound = Bundle.main.url(forResource: "Quack", withExtension: "wav")
+            .flatMap { NSSound(contentsOf: $0, byReference: true) } ?? NSSound(named: "Glass")
         sound?.playbackDeviceIdentifier = duckproofDeviceUID
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.4) { sound?.play() }
         DispatchQueue.main.asyncAfter(deadline: .now() + 3.2) { [weak self] in self?.evaluate() }
@@ -277,14 +279,13 @@ final class Controller: ObservableObject {
         return NSRunningApplication(processIdentifier: process.pid)?.localizedName ?? process.bundleID
     }
 
+    /// Announced once per call, when the call audio actually reaches Duckproof: apps open the mic
+    /// a moment before they start playing, so the call is often detected before there is a feeder.
     private func beginCall(feeder: AudioProcess?, callProcesses: [AudioProcess]) {
-        if !callStarted {
-            callStarted = true
-            if let feeder {
-                let others = appliedDuck.map { L("other apps %d dB", Int($0.db.rounded())) } ?? L("other apps at full volume")
-                notify(L("Call without ducking 🦆"), L("%@ audio → %@ · %@", appName(feeder), targetOutput()?.name ?? "—", others), key: "start")
-            }
-        }
+        guard let feeder else { return }
+        let others = appliedDuck.map { L("other apps %d dB", Int($0.db.rounded())) } ?? L("other apps at full volume")
+        notify(L("Call without ducking 🦆"), L("%@ audio → %@ · %@", appName(feeder), targetOutput()?.name ?? "—", others),
+               key: "start", sound: Notifier.quack)
     }
 
     /// A call app that records and plays at the same time is in a call. If it plays anywhere but
@@ -299,20 +300,19 @@ final class Controller: ObservableObject {
             warnedApps.insert(app.name)
             let name = L(app.name)
             Notifier.shared.post(L("%@ is lowering your other apps", name.prefix(1).uppercased() + name.dropFirst()),
-                                 L(app.hint), id: "duckproof.output.\(app.name)")
+                                 L(app.hint), id: "duckproof.output.\(app.name)", sound: .default)
         }
         warnedApps.formIntersection(inCall)
     }
 
     private func endCall() {
         releaseDucking()
-        callStarted = false
         warnedThisCall.removeAll()
     }
 
-    private func notify(_ title: String, _ body: String, key: String) {
+    private func notify(_ title: String, _ body: String, key: String, sound: UNNotificationSound? = nil) {
         guard notificationsEnabled, warnedThisCall.insert(key).inserted else { return }
-        Notifier.shared.post(title, body, id: "duckproof.\(key)")
+        Notifier.shared.post(title, body, id: "duckproof.\(key)", sound: sound)
     }
 
     // MARK: Monitoring

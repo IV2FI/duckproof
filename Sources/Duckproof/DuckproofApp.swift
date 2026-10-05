@@ -194,6 +194,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
     func applicationDidFinishLaunching(_ notification: Notification) {
         let openedByUser = !launchedAtLogin
+        forgetStaleCopies()
         Notifier.shared.requestAuthorization()
         updates.start()
         DispatchQueue.main.async {
@@ -207,6 +208,23 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     func applicationShouldHandleReopen(_ sender: NSApplication, hasVisibleWindows flag: Bool) -> Bool {
         showSettings()
         return false
+    }
+
+    /// Old copies left in the Trash by updates still answer to our bundle ID, and macOS may pick one of
+    /// them when showing our notifications, which then silently disappear. Make macOS forget them and
+    /// register this copy instead. Nothing is deleted.
+    private func forgetStaleCopies() {
+        guard let id = Bundle.main.bundleIdentifier else { return }
+        let me = Bundle.main.bundleURL.standardizedFileURL
+        let copies = LSCopyApplicationURLsForBundleIdentifier(id as CFString, nil)?.takeRetainedValue() as? [URL] ?? []
+        let lsregister = "/System/Library/Frameworks/CoreServices.framework/Frameworks/LaunchServices.framework/Support/lsregister"
+        for copy in copies where copy.standardizedFileURL != me && copy.path.contains("/.Trash/") {
+            let task = Process()
+            task.executableURL = URL(fileURLWithPath: lsregister)
+            task.arguments = ["-u", copy.path]
+            try? task.run()
+        }
+        LSRegisterURL(me as CFURL, true)
     }
 
     private var launchedAtLogin: Bool {

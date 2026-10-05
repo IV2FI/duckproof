@@ -1,3 +1,4 @@
+import UserNotifications
 import Foundation
 
 // `Duckproof --diagnose`: the Mac's audio state, handy for debugging on someone else's machine.
@@ -19,6 +20,29 @@ if CommandLine.arguments.contains("--diagnose") {
         print("  \(process.pid) \(process.bundleID.isEmpty ? "?" : process.bundleID) \(state.joined(separator: "+")) "
               + "in:\(process.inputDevices) out:\(process.outputDevices)")
     }
+    exit(0)
+}
+
+// `Duckproof --notify-test`: what macOS has recorded for Duckproof's notifications, then a test banner.
+if CommandLine.arguments.contains("--notify-test") {
+    let center = UNUserNotificationCenter.current()
+    let done = DispatchSemaphore(value: 0)
+    center.getNotificationSettings { s in
+        func name(_ v: UNNotificationSetting) -> String { [0: "not supported", 1: "OFF", 2: "on"][v.rawValue] ?? "?" }
+        let auth = [0: "not determined", 1: "DENIED", 2: "authorized", 3: "provisional"][s.authorizationStatus.rawValue] ?? "?"
+        let style = [0: "NONE", 1: "banners", 2: "alerts"][s.alertStyle.rawValue] ?? "?"
+        print("authorization: \(auth)\nalert style: \(style)\nalerts: \(name(s.alertSetting))\n"
+              + "notification center: \(name(s.notificationCenterSetting))\nsound: \(name(s.soundSetting))\n"
+              + "lock screen: \(name(s.lockScreenSetting))")
+        let content = UNMutableNotificationContent()
+        content.title = "Duckproof"; content.body = "Test notification 🦆"; content.sound = .default
+        center.add(UNNotificationRequest(identifier: "duckproof.test", content: content, trigger: nil)) { error in
+            print(error.map { "post failed: \($0)" } ?? "test notification posted")
+            done.signal()
+        }
+    }
+    done.wait()
+    Thread.sleep(forTimeInterval: 1)
     exit(0)
 }
 

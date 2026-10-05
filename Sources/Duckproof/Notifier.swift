@@ -35,11 +35,16 @@ final class Notifier: NSObject, ObservableObject, UNUserNotificationCenterDelega
         }
     }
 
+    /// The duck from the launch film (Resources/sounds/Quack.wav, made by scripts/make-quack.py).
+    static let quack = UNNotificationSound(named: UNNotificationSoundName("Quack.wav"))
+
     /// `url` is opened when the notification is clicked.
-    func post(_ title: String, _ body: String, id: String = UUID().uuidString, url: URL? = nil) {
+    func post(_ title: String, _ body: String, id: String = UUID().uuidString, url: URL? = nil,
+              sound: UNNotificationSound? = nil) {
         let content = UNMutableNotificationContent()
         content.title = title
         content.body = body
+        content.sound = sound
         if let url { content.userInfo["url"] = url.absoluteString }
         center.add(UNNotificationRequest(identifier: id, content: content, trigger: nil))
         refresh()   // keeps the "blocked by macOS" warning up to date
@@ -48,7 +53,7 @@ final class Notifier: NSObject, ObservableObject, UNUserNotificationCenterDelega
     // A menu bar app always counts as frontmost: without this, nothing would show.
     func userNotificationCenter(_ center: UNUserNotificationCenter, willPresent notification: UNNotification,
                                 withCompletionHandler completionHandler: @escaping (UNNotificationPresentationOptions) -> Void) {
-        completionHandler([.banner, .list])
+        completionHandler([.banner, .list, .sound])
     }
 
     func userNotificationCenter(_ center: UNUserNotificationCenter, didReceive response: UNNotificationResponse,

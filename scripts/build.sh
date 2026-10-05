@@ -43,6 +43,7 @@ cp "$BUILD/AppIcon.icns" "$APP/Contents/Resources/"
 cp -R "$BUILD/Duckproof.driver" "$APP/Contents/Resources/"
 cp "$ROOT/LICENSE" "$APP/Contents/Resources/LICENSE.txt"
 cp -R "$ROOT/Resources/en.lproj" "$ROOT/Resources/fr.lproj" "$APP/Contents/Resources/"
+cp "$ROOT/Resources/sounds/Quack.wav" "$APP/Contents/Resources/"
 
 cat > "$APP/Contents/Info.plist" <<PLIST
 <?xml version="1.0" encoding="UTF-8"?>
