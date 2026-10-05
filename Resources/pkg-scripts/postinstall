@@ -12,9 +12,16 @@ DRIVER="$3/Library/Audio/Plug-Ins/HAL/Duckproof.driver"
 /usr/sbin/chown -R root:wheel "$DRIVER"
 /usr/bin/killall coreaudiod || true
 
+# Wait for Core Audio to come back with the driver loaded: an app that connects while coreaudiod is
+# still restarting can hang forever on its first Core Audio call.
+for _ in $(/usr/bin/seq 1 30); do
+  /usr/sbin/system_profiler SPAudioDataType 2>/dev/null | /usr/bin/grep -q "Duckproof:" && break
+  /bin/sleep 1
+done
+
 CONSOLE_USER=$(/usr/bin/stat -f %Su /dev/console)
 if [ -n "$CONSOLE_USER" ] && [ "$CONSOLE_USER" != "root" ]; then
-  /bin/sleep 2
+  /bin/sleep 1
   /bin/launchctl asuser "$(/usr/bin/id -u "$CONSOLE_USER")" /usr/bin/sudo -u "$CONSOLE_USER" /usr/bin/open "$APP" || true
 fi
 exit 0
