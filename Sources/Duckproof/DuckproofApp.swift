@@ -329,21 +329,28 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
     func uninstall() {
         guard alert("Uninstall Duckproof?",
-                    "The audio driver will be removed (password required) and Duckproof will no longer open at login. Remember to switch FaceTime's audio output back to your headphones.",
+                    "Duckproof, its audio driver and its settings will be removed (password required). Remember to switch FaceTime's audio output back to your headphones.",
                     buttons: ["Uninstall", "Cancel"]) else { return }
-        controller.enabled = false
+        let openedAtLogin = controller.launchAtLogin
         controller.launchAtLogin = false
+        controller.stopForUninstall()
         do {
             try DriverManager.uninstall()
-        } catch DriverManager.Failure.cancelled {
-            return
         } catch {
-            _ = alert("Uninstall incomplete", error.localizedDescription, buttons: ["OK"])
+            if case DriverManager.Failure.cancelled = error {} else {
+                _ = alert("Uninstall incomplete", error.localizedDescription, buttons: ["OK"])
+            }
+            // Nothing was removed: put things back and relaunch fresh (all listeners were dropped).
+            controller.launchAtLogin = openedAtLogin
+            let relaunch = Process()
+            relaunch.executableURL = URL(fileURLWithPath: "/bin/sh")
+            relaunch.arguments = ["-c", "sleep 1; /usr/bin/open \"$0\"", Bundle.main.bundleURL.path]
+            try? relaunch.run()
+            NSApp.terminate(nil)
             return
         }
         UserDefaults.standard.removePersistentDomain(forName: Bundle.main.bundleIdentifier ?? "app.duckproof.Duckproof")
-        _ = alert("Duckproof is uninstalled", "All that's left is to move Duckproof.app to the Trash.", buttons: ["OK"])
-        NSWorkspace.shared.activateFileViewerSelecting([Bundle.main.bundleURL])
+        _ = alert("Duckproof is uninstalled", "Thanks for trying it! 🦆", buttons: ["OK"])
         NSApp.terminate(nil)
     }
 

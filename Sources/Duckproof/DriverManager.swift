@@ -47,10 +47,19 @@ enum DriverManager {
         try waitForDevice(present: true)
     }
 
+    /// Removes the driver, the app itself and the install receipt in one password prompt, then waits
+    /// for Core Audio to be back so the app never talks to it mid-restart.
     static func uninstall() throws {
+        let app = Bundle.main.bundleURL.path
         try runAsAdministrator("""
-            /bin/rm -rf \(shellQuote(installedURL.path)) && /usr/bin/killall coreaudiod
+            /bin/rm -rf \(shellQuote(installedURL.path)) /Library/Audio/Plug-Ins/HAL/Unduck.driver \(shellQuote(app)); \
+            /usr/sbin/pkgutil --forget app.duckproof.Duckproof.pkg >/dev/null 2>&1; \
+            /usr/bin/killall coreaudiod; \
+            for i in $(/usr/bin/seq 1 30); do /usr/sbin/system_profiler SPAudioDataType >/dev/null 2>&1 && break; /bin/sleep 0.5; done
             """, prompt: L("Duckproof is removing its virtual audio device."))
+        let lsregister = "/System/Library/Frameworks/CoreServices.framework/Frameworks/LaunchServices.framework/Support/lsregister"
+        let task = Process(); task.executableURL = URL(fileURLWithPath: lsregister); task.arguments = ["-u", app]
+        try? task.run()
     }
 
     /// coreaudiod takes a second or two to come back after being relaunched.

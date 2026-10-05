@@ -82,6 +82,8 @@ final class Controller: ObservableObject {
     private var micListeners: [AudioObjectID: AudioSystem.Listener] = [:]
     private var processListeners: [AudioObjectID: [AudioSystem.Listener]] = [:]
     private var followUp: DispatchWorkItem?
+    /// Set before uninstalling: Core Audio is about to restart, so stay completely quiet.
+    private var stopped = false
 
     /// Our own ducking while a call is on: the output volume is lowered by `db` (negative)
     /// and FaceTime is boosted by the same amount, so only the other apps get quieter.
@@ -138,6 +140,7 @@ final class Controller: ObservableObject {
     // MARK: Main logic
 
     func evaluate() {
+        guard !stopped else { return }
         defer { updateWatchers() }
         refreshDevices()
 
@@ -264,6 +267,15 @@ final class Controller: ObservableObject {
         // FaceTime shares the lowered device with the other apps: compensate so it stays put.
         if let duck = appliedDuck, duck.device == route?.output { gain *= pow(10, Double(-duck.db) / 20) }
         ud_passthrough_set_gain(passthrough, Float(gain))
+    }
+
+    /// Before the driver is removed (and Core Audio restarted): stop forwarding and drop every listener,
+    /// so nothing calls into Core Audio while it restarts (that call could hang the app).
+    func stopForUninstall() {
+        shutdown()
+        stopped = true
+        followUp?.cancel()
+        listeners = []; duckproofListeners = []; micListeners = [:]; processListeners = [:]
     }
 
     func shutdown() {
