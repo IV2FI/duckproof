@@ -25,7 +25,7 @@ def quack():
 out = np.zeros(int(0.3 * SR))
 p = pop(900); out[:len(p)] += 0.45 * p
 q = quack(); i = int(0.04 * SR); out[i:i + len(q)] += 0.45 * q
-out *= 0.8 / np.abs(out).max()
+out *= 0.32 / np.abs(out).max()   # about 8 dB quieter than the film: notifications sit close to the ear
 path = os.path.join(os.path.dirname(__file__), '..', 'Resources', 'sounds', 'Quack.wav')
 with wave.open(path, 'wb') as w:
     w.setnchannels(1); w.setsampwidth(2); w.setframerate(SR)
