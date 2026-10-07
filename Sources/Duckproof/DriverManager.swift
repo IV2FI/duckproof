@@ -1,4 +1,5 @@
 import AppKit
+import Security
 
 /// Installs / updates / removes the virtual audio driver bundled inside the app.
 /// No Mac restart needed: relaunching coreaudiod is enough to load the driver.
@@ -34,25 +35,51 @@ enum DriverManager {
 
     static var isDeviceLoaded: Bool { AudioSystem.device(uid: duckproofDeviceUID) != nil }
 
+    /// The driver is copied from the app bundle, which a user may own: something could swap it just
+    /// before the copy. So the *installed* copy (root-owned, nobody else can write it) is checked
+    /// before Core Audio loads it: it must be signed by the same team as this app, or, for builds
+    /// from source (ad hoc), at least intact. Otherwise it is deleted.
     static func install() throws {
         guard let source = bundledURL else { throw Failure.script("Driver not found inside the app.") }
         let destination = shellQuote(installedURL.path)
+        let verify = teamRequirement.map { "/usr/bin/codesign --verify --strict -R=\(shellQuote($0)) \(destination)" }
+            ?? "/usr/bin/codesign --verify --strict \(destination)"
         try runAsAdministrator("""
-            /bin/rm -rf \(destination) /Library/Audio/Plug-Ins/HAL/Unduck.driver && \
+            /bin/rm -rf \(destination); \(removeLegacyDriver); \
             /bin/mkdir -p /Library/Audio/Plug-Ins/HAL && \
             /usr/bin/ditto \(shellQuote(source.path)) \(destination) && \
             /usr/sbin/chown -R root:wheel \(destination) && \
+            /bin/chmod -R go-w \(destination) && \
+            { \(verify) || { /bin/rm -rf \(destination); echo "The audio driver's signature is invalid." >&2; exit 1; }; } && \
             /usr/bin/killall coreaudiod
             """, prompt: L("Duckproof is installing its virtual audio device."))
         try waitForDevice(present: true)
     }
+
+    /// "Signed by the same Apple developer team as this app", or nil for an ad-hoc build.
+    private static var teamRequirement: String? {
+        var code: SecCode?
+        var staticCode: SecStaticCode?
+        var info: CFDictionary?
+        guard SecCodeCopySelf([], &code) == errSecSuccess, let code,
+              SecCodeCopyStaticCode(code, [], &staticCode) == errSecSuccess, let staticCode,
+              SecCodeCopySigningInformation(staticCode, SecCSFlags(rawValue: kSecCSSigningInformation), &info) == errSecSuccess,
+              let team = (info as? [String: Any])?[kSecCodeInfoTeamIdentifier as String] as? String else { return nil }
+        return "anchor apple generic and certificate leaf[subject.OU] = \"\(team)\""
+    }
+
+    /// Duckproof used to be called Unduck: remove its driver, but only if it really is ours.
+    private static let removeLegacyDriver = """
+        [ "$(/usr/bin/defaults read /Library/Audio/Plug-Ins/HAL/Unduck.driver/Contents/Info CFBundleIdentifier 2>/dev/null)" = app.unduck.driver ] \
+        && /bin/rm -rf /Library/Audio/Plug-Ins/HAL/Unduck.driver
+        """
 
     /// Removes the driver, the app itself and the install receipt in one password prompt, then waits
     /// for Core Audio to be back so the app never talks to it mid-restart.
     static func uninstall() throws {
         let app = Bundle.main.bundleURL.path
         try runAsAdministrator("""
-            /bin/rm -rf \(shellQuote(installedURL.path)) /Library/Audio/Plug-Ins/HAL/Unduck.driver \(shellQuote(app)); \
+            /bin/rm -rf \(shellQuote(installedURL.path)) \(shellQuote(app)); \(removeLegacyDriver); \
             /usr/sbin/pkgutil --forget app.duckproof.Duckproof.pkg >/dev/null 2>&1; \
             /usr/bin/killall coreaudiod; \
             for i in $(/usr/bin/seq 1 30); do /usr/sbin/system_profiler SPAudioDataType >/dev/null 2>&1 && break; /bin/sleep 0.5; done

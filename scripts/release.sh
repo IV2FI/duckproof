@@ -23,4 +23,11 @@ NOTARY_PROFILE=unduck \
 spctl -a -t install "build/Duckproof-$VERSION.pkg"
 git tag "v$VERSION"
 git push origin main "v$VERSION"
-gh release create "v$VERSION" "build/Duckproof-$VERSION.pkg" --title "Duckproof $VERSION" --generate-notes
+# The checksum lets anyone check that the file they downloaded is the one published here.
+SHA=$(shasum -a 256 "build/Duckproof-$VERSION.pkg" | cut -d' ' -f1)
+gh release create "v$VERSION" "build/Duckproof-$VERSION.pkg" --title "Duckproof $VERSION" --generate-notes \
+  --notes "**SHA-256** of \`Duckproof-$VERSION.pkg\`: \`$SHA\`"
+# Keep the build copies out of Launch Services: duplicates of the app confuse macOS (notifications).
+LSR=/System/Library/Frameworks/CoreServices.framework/Frameworks/LaunchServices.framework/Support/lsregister
+"$LSR" -u "$ROOT/build/Duckproof.app" 2>/dev/null || true
+"$LSR" -u "$ROOT/build/pkgroot/Applications/Duckproof.app" 2>/dev/null || true

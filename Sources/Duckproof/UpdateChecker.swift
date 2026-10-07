@@ -47,7 +47,13 @@ final class UpdateChecker: ObservableObject {
                       let tag = json["tag_name"] as? String,
                       let page = (json["html_url"] as? String).flatMap(URL.init(string:)) {
                 let version = tag.hasPrefix("v") ? String(tag.dropFirst()) : tag
-                result = .success(Self.isNewer(version, than: Self.currentVersion) ? Release(version: version, url: page) : nil)
+                // Only ever send people to this project's own releases page.
+                let expected = "https://github.com/\(repository)/releases/".lowercased()
+                if page.absoluteString.lowercased().hasPrefix(expected) {
+                    result = .success(Self.isNewer(version, than: Self.currentVersion) ? Release(version: version, url: page) : nil)
+                } else {
+                    result = .failure(URLError(.badURL))
+                }
             } else {
                 result = .failure(URLError(.cannotParseResponse))
             }

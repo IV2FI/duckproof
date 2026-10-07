@@ -133,6 +133,8 @@ After:   FaceTime ──► Duckproof ──► AirPods ◄── Music   (nothi
   <p>Duckproof reads the virtual audio channel FaceTime plays into, and macOS counts reading any audio channel as "using the microphone". Duckproof never listens to your real microphone; the orange indicator only shows during calls.</p>
   <h3>Does it work with Zoom, Discord, Teams or WhatsApp?</h3>
   <p>Yes, if the app lets you choose a speaker: pick <b>Duckproof</b> in its audio settings. If Zoom, Teams, Discord, Slack, WhatsApp, Webex or a browser call is still lowering your other apps, Duckproof sends a notification telling you where to change it.</p>
+  <h3>Is it safe?</h3>
+  <p>Yes. It's open source, signed and notarized by Apple. The admin password is only used to copy the audio driver, which runs isolated from the rest of macOS and is signature-checked before it's loaded. Nothing is collected. <a href="https://github.com/iv2fi/duckproof#security--privacy">Security details</a>.</p>
   <h3>Does it add latency?</h3>
   <p>About 20 ms on the call only, unnoticeable next to Bluetooth's own latency. Your music and videos are never delayed.</p>
 

@@ -1,5 +1,4 @@
 #!/bin/sh
 # Quit Duckproof if it's running so the update replaces the app cleanly.
 /usr/bin/pkill -x Duckproof || true
-/usr/bin/pkill -x Unduck || true      # the app's former name
 exit 0

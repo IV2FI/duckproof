@@ -103,7 +103,7 @@ FaceTime's output isn't set to Duckproof yet. Go to **FaceTime › Video › Aud
 
 ### Is it safe?
 
-Duckproof is fully open source: you can read every line or [build it yourself](#build-from-source). Its driver is built from [BlackHole](https://github.com/ExistentialAudio/BlackHole), a widely used open-source virtual audio driver. It doesn't collect anything; the only network request is the optional daily check for a new release on GitHub.
+Duckproof is fully open source: you can read every line or [build it yourself](#build-from-source). Its driver is built from [BlackHole](https://github.com/ExistentialAudio/BlackHole), a widely used open-source virtual audio driver, runs isolated from the rest of the system, and is signature-checked before it's loaded. It doesn't collect anything. Details in [Security & privacy](#security--privacy).
 
 ### Does it add latency?
 
@@ -117,6 +117,27 @@ About 20 ms, which you won't notice next to Bluetooth latency (150 ms or more).
 sudo rm -rf /Library/Audio/Plug-Ins/HAL/Duckproof.driver /Applications/Duckproof.app
 sudo killall coreaudiod
 ```
+
+## Security & privacy
+
+- **What the admin password is for.** Only to copy the audio driver into `/Library/Audio/Plug-Ins/HAL` when installing (and to remove it when uninstalling). The app itself never runs as root.
+- **The driver runs isolated.** macOS loads third-party audio drivers in a separate, sandboxed process (`Core Audio Driver (Duckproof.driver)`), not inside `coreaudiod`. It is [BlackHole](https://github.com/ExistentialAudio/BlackHole), unmodified, only configured at build time ([`scripts/build-driver.sh`](scripts/build-driver.sh)).
+- **Signed and checked.** The app, the driver and the installer are signed with a Developer ID and notarized by Apple. Before Core Audio loads the driver, the installer (and the app, when it reinstalls the driver) checks that it is signed by the same developer as the app, and makes it owned by root and writable by nobody else. A driver that fails the check is deleted.
+- **The hidden twin device.** The *Duckproof* device is an output only. A hidden, input-only twin carries the call audio so Duckproof can forward it to your headphones. As with any loopback audio driver (BlackHole, Loopback…), an app you have granted microphone access could open that twin too: macOS shares a device's input with every app that reads it, and a driver can't pick who does. Such an app could already record you, so only give microphone access to apps you trust.
+- **Microphone permission.** macOS counts reading the hidden twin as using a microphone. Duckproof never opens your real microphone.
+- **Network.** One request a day to the GitHub API to look for a new release. Nothing is sent, nothing is tracked, and update links can only point to this repository's releases.
+- **Why not Core Audio process taps?** They avoid installing a driver, but then every app's audio (music, videos, games) has to be captured and re-played by a third-party app, and stopping the ducking itself needs undocumented tricks. Duckproof only touches the call, only while it's on.
+
+### Verify your download
+
+```bash
+shasum -a 256 ~/Downloads/Duckproof-*.pkg              # compare with the SHA-256 in the release notes
+pkgutil --check-signature ~/Downloads/Duckproof-*.pkg  # "Developer ID Installer" and "Notarization: trusted"
+```
+
+### Report a vulnerability
+
+Please use [private vulnerability reporting](https://github.com/IV2FI/duckproof/security/advisories/new) rather than a public issue.
 
 ## Build from source
 

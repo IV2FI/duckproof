@@ -5,11 +5,24 @@ APP="$3/Applications/Duckproof.app"
 DRIVER="$3/Library/Audio/Plug-Ins/HAL/Duckproof.driver"
 
 /bin/rm -rf "$DRIVER"
-# Duckproof used to be called Unduck: remove the old app and driver.
-/bin/rm -rf "$3/Applications/Unduck.app" "$3/Library/Audio/Plug-Ins/HAL/Unduck.driver"
+# Duckproof used to be called Unduck: remove the old app and driver, only if they really are ours.
+bundle_id() { /usr/bin/defaults read "$1/Contents/Info" CFBundleIdentifier 2>/dev/null; }
+[ "$(bundle_id "$3/Applications/Unduck.app")" = "app.unduck.Unduck" ] && /bin/rm -rf "$3/Applications/Unduck.app"
+[ "$(bundle_id "$3/Library/Audio/Plug-Ins/HAL/Unduck.driver")" = "app.unduck.driver" ] && /bin/rm -rf "$3/Library/Audio/Plug-Ins/HAL/Unduck.driver"
+
 /bin/mkdir -p "$3/Library/Audio/Plug-Ins/HAL"
 /usr/bin/ditto "$APP/Contents/Resources/Duckproof.driver" "$DRIVER"
 /usr/sbin/chown -R root:wheel "$DRIVER"
+/bin/chmod -R go-w "$DRIVER"
+
+# Only let Core Audio load a driver signed by the same team as the app (builds from source are
+# ad hoc: then check that it is at least intact).
+TEAM=$(/usr/bin/codesign -dv "$APP" 2>&1 | /usr/bin/sed -n 's/^TeamIdentifier=//p')
+if [ -n "$TEAM" ] && [ "$TEAM" != "not set" ]; then
+  /usr/bin/codesign --verify --strict -R="anchor apple generic and certificate leaf[subject.OU] = \"$TEAM\"" "$DRIVER"
+else
+  /usr/bin/codesign --verify --strict "$DRIVER"
+fi || { /bin/rm -rf "$DRIVER"; echo "Duckproof: invalid driver signature" >&2; exit 1; }
 /usr/bin/killall coreaudiod || true
 
 # Wait for Core Audio to come back with the driver loaded: an app that connects while coreaudiod is
